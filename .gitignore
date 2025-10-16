@@ -1,0 +1,13 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+
+# Typora 临时文件
+._*
+
+# 但保留 assets 文件夹中的图片
+!assets/
