@@ -614,3 +614,199 @@ Deque还有push()和pop()等方法，用于模拟栈
 
 ![](assets/Array与Linked阻塞队列对比知识1.png)
 
+### Map基础知识
+
+**HashMap和HashTable的区别：**
+
+![](assets/HashMap和HashTable区别1.png)
+
+![](assets/HashMap初始容量构造1.png)
+
+![](assets/HashMap的hash表值大小1.png)
+
+**HashMap和HashSet区别：**
+
+![](assets/HashMap与HashSet区别知识1.png)
+
+**HashMap和TreeMap的区别：**
+
+TreeMap和HashMap均继承自AbstractMap，但TreeMap还实现了NavigableMap接口和SortedMap接口
+
+![](assets/TreeMap1.png)
+
+实现的NavigableMap接口让TreeMap具有对集合内元素的搜索的能力
+
+![](assets/NavigableMap1.png)
+
+实现`SortedMap`接口让 `TreeMap` 有了对集合中的元素根据键排序的能力。默认是按 key 的升序排序，不过我们也可以指定排序的比较器
+
+代码如下：
+
+    public class Person {
+        private Integer age;
+    
+        public Person(Integer age) {
+            this.age = age;
+        }
+    
+        public Integer getAge() {
+            return age;
+        }
+    public static void main(String[] args) {
+        TreeMap<Person, String> treeMap = new TreeMap<>(new Comparator<Person>() {
+            @Override
+            public int compare(Person person1, Person person2) {
+                int num = person1.getAge() - person2.getAge();
+                return Integer.compare(num, 0);
+            }
+        });
+        treeMap.put(new Person(3), "person1");
+        treeMap.put(new Person(18), "person2");
+        treeMap.put(new Person(35), "person3");
+        treeMap.put(new Person(16), "person4");
+        treeMap.entrySet().stream().forEach(personStringEntry -> {
+            System.out.println(personStringEntry.getValue());
+        	});
+    	}
+    }
+~~~select a language
+person1
+person4
+person2
+person3
+
+Lambda表达式
+TreeMap<Person, String> treeMap = new TreeMap<>((person1, person2) -> {
+  int num = person1.getAge() - person2.getAge();
+  return Integer.compare(num, 0);
+});
+~~~
+
+**HashSet如何检查重复：**
+
+![](assets/HashSet检查重复1.png)
+
+![](assets/HashSet检查重复2.png)
+
+**HashMap的底层实现：**
+
+JDK8之前的HashMap底层是数组+链表，链表散列
+
+HashMap通过key的hashcode经过hash函数（扰动函数）处理后得到hash值，再通过(n-1)&hash判断当前元素存放的位置(n为数组长度)，如果当前位置存在元素，即拿该位置元素与要存放元素的hash值与key值进行比较，相同覆盖，否则通过拉链法进行解决冲突
+
+`HashMap` 中的扰动函数（`hash` 方法）是用来优化哈希值的分布，通过对原始的hashCode进行额外处理，扰动函数可以减小由于糟糕的hashCode实现导致的hash碰撞，从而提高数据的分布均匀性
+
+![](assets/JDK8的HashMap的hash源码.png)
+
+![](assets/拉链法.png)
+
+**JDK8之后的底层：**
+
+![](assets/JDK8之后的HashMap底层.png)
+
+**为什么优先扩容而非直接转为红黑树？**
+
+数组扩容能减少哈希冲突的发生概率（即将元素重新分散到新的、更大的数组中），这在多数情况下比直接转换为红黑树更高效
+
+红黑树需要保持自平衡，维护成本较高，并且过早引入红黑树反而会增加复杂度
+
+**为什么选择阈值8和64？**
+
+1.泊松分布表明，链表长度达到 8 的概率极低（小于千万分之一）。在绝大多数情况下，链表长度都不会超过 8。阈值设置为 8，可以保证性能和空间效率的平衡
+
+2.数组长度阈值 64 同样是经过实践验证的经验值。在小数组中扩容成本低，优先扩容可以避免过早引入红黑树。数组大小达到 64 时，冲突概率较高，此时红黑树的性能优势开始显现
+
+![](assets/JDK8红黑树.png)
+
+HashMap链表转红黑树
+
+1.putVal中执行链表转红黑树的判断逻辑
+
+链表长度大于8的时候，执行treeifyBin逻辑
+
+~~~select a language
+// 遍历链表
+for (int binCount = 0; ; ++binCount) {
+    // 遍历到链表最后一个节点
+    if ((e = p.next) == null) {
+        p.next = newNode(hash, key, value, null);
+        // 如果链表元素个数大于TREEIFY_THRESHOLD（8）
+        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+            // 红黑树转换（并不会直接转换成红黑树）
+            treeifyBin(tab, hash);
+        break;
+    }
+    if (e.hash == hash &&
+        ((k = e.key) == key || (key != null && key.equals(k))))
+        break;
+    p = e;
+}
+~~~
+
+2.treeifyBin判断是否转为红黑树
+
+~~~select a language
+final void treeifyBin(Node<K,V>[] tab, int hash) {
+    int n, index; Node<K,V> e;
+    // 判断当前数组的长度是否小于 64
+    if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY)
+        // 如果当前数组的长度小于 64，那么会选择先进行数组扩容
+        resize();
+    else if ((e = tab[index = (n - 1) & hash]) != null) {
+        // 否则才将列表转换为红黑树
+
+        TreeNode<K,V> hd = null, tl = null;
+        do {
+            TreeNode<K,V> p = replacementTreeNode(e, null);
+            if (tl == null)
+                hd = p;
+            else {
+                p.prev = tl;
+                tl.next = p;
+            }
+            tl = p;
+        } while ((e = e.next) != null);
+        if ((tab[index] = hd) != null)
+            hd.treeify(tab);
+    }
+}
+~~~
+
+将链表转换成红黑树前会判断，如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树
+
+**HashMap的长度为什么是2的幂次方？**
+
+为了让HashMap存取高效并且减少hash碰撞，需要确保数据尽量均匀分布
+
+hash值在java中用int表示即可，范围为-2147483648~2147483647，大概40亿的映射空间，只要hash函数映射比较均匀松散，一般情况不会出现碰撞，但是一个40亿长度的数组内存是完全存不下去的，因而这个散列值不可以直接拿来使用，用之前可以先对数组的长度进行取模运算，余数才是存放的下标
+
+**算法设计？**
+
+![](assets/HashMap长度算法设计1.png)
+
+~~~select a language
+假设有一个元素的哈希值为 10101100
+
+旧数组元素位置计算：
+hash        = 10101100
+length - 1  = 00000111
+& -----------------
+index       = 00000100  (4)
+
+新数组元素位置计算：
+hash        = 10101100
+length - 1  = 00001111
+& -----------------
+index       = 00001100  (12)
+
+看第四位（从右数）：
+1.高位为 0：位置不变。
+2.高位为 1：移动到新位置（原索引位置+原容量）。
+~~~
+
+![](assets/HashMap长度2.png)
+
+**HashMap多线程操作导致死循环问题：**
+
+![](assets/HashMap多线程操作1.png)
+
