@@ -267,3 +267,61 @@ ChatClient与ChatModel配合使用
 
 ## SSE流式输出多模型共存
 
+**流式输出：**
+
+![](assets/ssa25.png)
+
+**SSE服务器发送事件：**
+
+![](assets/ssa26.png)
+
+![](assets/ssa27.png)
+
+![](assets/ssa28.png)
+
+sse下一代(Stream able Http)动态流式，支持双向
+
+sse适用场景：
+
+![](assets/ssa29.png)
+
+**多模型共存：**
+
+![](assets/ssa30.png)
+
+对于ChatClient的实现
+
+![](assets/ssa31.png)
+
+![](assets/ssa32.png)
+
+其实可以不用再去调用api固定其模型名称，因为在上一个ChatModel上面已经实现了，注入ChatClient本身就是需要调用ChatModel，所以不需要再使用ChatOptions去构建要使用的模型，同时在多个模型共存下需要使用注解@Qualifier进行识别
+
+Flux:
+
+![](assets/ssa33.png)
+
+## 提示词Prompt
+
+DeepSeek提示词样例：
+
+https://api-docs.deepseek.com/zh-cn/prompt-library
+
+**提示词：**
+
+![](assets/ssa34.png)
+
+一般使用ChatModel的call方法，该方法接受prompt实例并返回ChatResponse
+
+**prompt>messag>string**
+
+![](assets/ssa35.png)
+
+提示词四大角色：
+
+![](assets/ssa36.png)
+
+它存在于枚举类MessageType中，而MessageType则被使用于Message接口中，Message接口继承于Content文本类
+
+![](assets/ssa37.png)
+

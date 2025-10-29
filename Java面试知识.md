@@ -810,3 +810,149 @@ index       = 00001100  (12)
 
 ![](assets/HashMap多线程操作1.png)
 
+**HashMap为什么线程不安全：**
+
+JDK7及之前的版本，在多线程环境下，HashMap扩容时会造成死循环和数据丢失问题，数据丢失问题在JDK7和JDK8中均存在
+
+JDK8之后，在HashMap中，多个键值可能会被分配到同一个桶（bucket）中，并以链表或红黑树的形式存储。多个线程对HashMap的put操作会导致线程不安全
+
+![](assets/HashMap线程不安全1.png)
+
+~~~select a language
+public V put(K key, V value) {
+    return putVal(hash(key), key, value, false, true);
+}
+
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+                   boolean evict) {
+    // ...
+    // 判断是否出现 hash 碰撞
+    // (n - 1) & hash 确定元素存放在哪个桶中，桶为空，新生成结点放入桶中(此时，这个结点是放在数组中)
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        tab[i] = newNode(hash, key, value, null);
+    // 桶中已经存在元素（处理hash冲突）
+    else {
+    // ...
+}
+~~~
+
+![](assets/HashMap线程不安全2.png)
+
+~~~select a language
+public V put(K key, V value) {
+    return putVal(hash(key), key, value, false, true);
+}
+
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+                   boolean evict) {
+    // ...
+    // 实际大小大于阈值则扩容
+    if (++size > threshold)
+        resize();
+    // 插入后回调
+    afterNodeInsertion(evict);
+    return null;
+}
+~~~
+
+**ConcurrentHashMap和HashTable的区别：**
+
+主要区别在于实现线程安全的方式
+
+![](assets/ConcurrentHashMap和HashTable1.png)
+
+两者的底层数据结构
+
+HashTable：
+
+![](assets/HashTable1.png)
+
+JDK7的ConcurrentHashMap：
+
+![](assets/ConcurrentHashMap1.png)
+
+JDK8的ConcurrentHashMap：
+
+![](assets/ConcurrentHashMap2.png)
+
+![](assets/ConcurrentHashMap3.png)
+
+**ConcurrentHashMap线程安全的具体实现/底层实现：**
+
+JDK8之前：
+
+将数据分为段式数组，一段一段存储，然后将每段数据加锁，当一个线程占用锁访问其中一个段数据时，其他段的数据也会被其他线程访问
+
+**ConcurrentHashMap 是由 Segment 数组结构和 HashEntry 数组结构组成**
+
+`Segment` 继承了 `ReentrantLock`,所以 `Segment` 是一种可重入锁，扮演锁的角色。`HashEntry` 用于存储键值对数据
+
+~~~select a language
+static class Segment<K,V> extends ReentrantLock implements Serializable {
+}
+~~~
+
+![](assets/ConcurrentHashMap4.png)
+
+JDK8以后：
+
+取消了Segment分段锁，使用Node+CAS+synchronized保证并发安全。数据结构跟HashMap1.8的结构类似，数组+链表/红黑二叉树。Java8在链表长度超过阈值8时会将其链表(时间复杂度O(N))转为红黑树(时间复杂度O(log(N)))
+
+Java 8 中，锁粒度更细，`synchronized` 只锁定当前链表或红黑二叉树的首节点，这样只要 hash 不冲突，就不会产生并发，就不会影响其他 Node 的读写，效率大幅提升。
+
+![](assets/ConcurrentHashMap5.png)
+
+![](assets/ConcurrentHashMap6.png)
+
+![](assets/ConcurrentHashMap7.png)
+
+![](assets/ConcurrentHashMap8.png)
+
+![](assets/ConcurrentHashMap9.png)
+
+如何保证ConcurrentHashMap复合操作的原子性？
+
+![](assets/ConcurrentHashMap10.png)
+
+Collections工具类：
+
+![](assets/Collections工具类.png)
+
+排序操作：
+
+~~~select a language
+void reverse(List list)//反转
+void shuffle(List list)//随机排序
+void sort(List list)//按自然排序的升序排序
+void sort(List list, Comparator c)//定制排序，由Comparator控制排序逻辑
+void swap(List list, int i , int j)//交换两个索引位置的元素
+void rotate(List list, int distance)//旋转。当distance为正数时，将list后distance个元素整体移到前面。当distance为负数时，将 list的前distance个元素整体移到后面
+~~~
+
+查找、替换操作：
+
+~~~select a language
+int binarySearch(List list, Object key)//对List进行二分查找，返回索引，注意List必须是有序的
+int max(Collection coll)//根据元素的自然顺序，返回最大的元素。 类比int min(Collection coll)
+int max(Collection coll, Comparator c)//根据定制排序，返回最大元素，排序规则由Comparatator类控制。类比int min(Collection coll, Comparator c)
+void fill(List list, Object obj)//用指定的元素代替指定list中的所有元素
+int frequency(Collection c, Object o)//统计元素出现次数
+int indexOfSubList(List list, List target)//统计target在list中第一次出现的索引，找不到则返回-1，类比int lastIndexOfSubList(List source, list target)
+boolean replaceAll(List list, Object oldVal, Object newVal)//用新元素替换旧元素
+~~~
+
+同步控制：
+
+`Collections` 提供了多个`synchronizedXxx()`方法·，该方法可以将指定集合包装成线程同步的集合，从而解决多线程并发访问集合时的线程安全问题
+
+但是对于普通的集合都是线程不安全的，所以一般对于并发都使用JUC下的并发集合
+
+最好不要使用以下方法
+
+~~~select a language
+synchronizedCollection(Collection<T>  c) //返回指定 collection 支持的同步（线程安全的）collection。
+synchronizedList(List<T> list)//返回指定列表支持的同步（线程安全的）List。
+synchronizedMap(Map<K,V> m) //返回由指定映射支持的同步（线程安全的）Map。
+synchronizedSet(Set<T> s) //返回指定 set 支持的同步（线程安全的）set。
+~~~
+
