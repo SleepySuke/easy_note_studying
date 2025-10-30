@@ -215,4 +215,99 @@ public List<List<String>> groupAnagrams(String[] strs) {
 - **结果缓存**：计算一次后缓存结果，后续调用直接使用缓存
 
 
+## 最长连续序列
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 最长连续序列
+ * 给定一个未排序的整数数组 nums ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
+ * 设计一个算法的时间复杂度为 O(n) 。
+ * 示例 1：
+ * 输入：nums = [100,4,200,1,3,2]
+ * 输出：4
+ * 解释：最长数字连续序列是 [1, 2, 3, 4]。它的长度为 4。
+ * 示例 2：
+ * 输入：nums = [0,3,7,2,5,8,4,6,0,1]
+ * 输出：9
+ * 解释：最长数字连续序列是 [0, 1, 2, 3, 4, 5, 6, 7, 8]。它的长度为 9。
+ * 示例3 :
+ * 输入：nums = [1,0,1,2]
+ * 输出：3
+ */
+public class hot3 {
+    public static int longestConsecutive(int[] nums) {
+        if(nums == null){
+            return 0;
+        }
+        if(nums.length == 0){
+            return 0;
+        }
+        insertSort(nums);
+        int current_length = 1;
+        int max_length = 1;
+        for(int i = 1; i < nums.length; i++){
+            if(nums[i] == nums[i - 1] + 1){
+                current_length++;
+            } else if (nums[i] == nums[i-1]) {
+                continue;
+            } else{
+                current_length = 1;
+            }
+            max_length = Math.max(current_length, max_length);
+        }
+        return max_length;
+    }
+
+    public static void insertSort(int[] nums){
+        for(int i = 1; i < nums.length; i++){
+            int base = nums[i];
+            int idx = i - 1;
+            while(idx >= 0 && nums[idx] > base){
+                nums[idx + 1] = nums[idx];
+                idx--;
+            }
+            nums[idx + 1] = base;
+        }
+    }
+}
+```
+
+时间超出限制，我真笑了。。。
+
+```
+public static int longestConsecutive(int[] nums) {
+    Set<Integer> set = new HashSet<>();
+    for (int num : nums) {
+        set.add(num);
+    }
+    int max_length = 0;
+    for (int num : set) {
+        int current = num;
+        // 只有当num-1不存在时，才开始向后遍历num+1，num+2，num+3......
+        if(!set.contains(current - 1)){
+            while (set.contains(current + 1)) {
+                current++;
+            }
+        }
+        max_length = Math.max(max_length, current - num + 1);
+    }
+    return max_length;
+}
+```
+
+直接使用Set集合即可，第一种方法主要浪费在排序的时间，虽然插入排序最好可以达到O(n)，但是如果是超大数或者逆序的排序数组，此时它的时间会为O(n^2)
+
+Set集合的思路
+
+1. 将所有数字存入Set（O(n)）
+2. 遍历Set中的每个数字
+3. 只有当当前数字是某个连续序列的起点（即num-1不存在）时，才开始向后寻找连续数字
+4. 记录最长的序列长度
 
