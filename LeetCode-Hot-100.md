@@ -984,5 +984,46 @@ public List<Integer> findAnagrams(String s, String p) {
 }
 ```
 
+不定长窗口，当学习。。。
+
+```
+public static List<Integer> findAnagrams(String s, String p) {
+    int sLen = s.length();
+    int pLen = p.length();
+    if (sLen < pLen) {
+        return new ArrayList<>();
+    }
+    List<Integer> res = new ArrayList<>();
+    int[] pCount = new int[26];//记录p中每个字母出现的次数
+    for (char c : p.toCharArray()) {
+        pCount[c - 'a']++;
+    }
+    int left = 0;
+    for(int right = 0; right < sLen; right++){
+        int idx = s.charAt(right) - 'a';//获取当前字符的索引
+        pCount[idx]--;//右端点进入窗口
+        while (pCount[idx] < 0) {
+            //如果此时的字符的个数小于0，说明窗口中的字符已经超出了p的范围
+            // 移除窗口左端的字符
+            pCount[s.charAt(left) - 'a']++;
+            left++;
+        }
+        // 判断窗口大小是否等于p的大小 子串和目标串的出现次数一致
+        if (right - left + 1 == pLen) {
+            res.add(left);
+        }
+    }
+    return res;
+}
+```
+
+窗口主要由right和left进行构建
+
+
+
+![](assets/找到字符串所有字母异或词2.png)
+
+![](assets/找到字符串所有字母异或词3.png)
+
 
 
