@@ -1025,5 +1025,193 @@ public static List<Integer> findAnagrams(String s, String p) {
 
 ![](assets/找到字符串所有字母异或词3.png)
 
+##和为K的子数组
 
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 和为K的子数组
+ * 给定一个整数数组nums和一个整数k，请统计并返回该数组中和为k的子数组的个数
+ * 子数组是数组中元素的连续非空序列
+ * 示例1：
+ * 输入：nums = [1,1,1], k = 2
+ * 输出：2
+ * 示例2：
+ * 输入：nums = [1,2,3], k = 3
+ * 输出：2
+ */
+public class hot10 {
+
+    public static int subarraySum(int[] nums, int k){
+        int count = 0;
+        for(int left = 0; left < nums.length; left++){
+            int sum = 0;
+            for(int right = left; right < nums.length; right++){
+                sum += nums[right];
+                if(sum == k){
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+}
+```
+
+暴力解法，枚举所有的子数组可能性即可，但此时时间复杂为O(n^2)
+
+使用滑动窗口，过不了，因为滑动窗口大多都是需要正数的情况下
+
+```
+public static int subarraySum(int[] nums, int k){
+    int count = 0;
+    int left = 0;
+    int sum = 0;
+    for(int right = 0; right < nums.length; right++){
+        sum += nums[right];
+        while(sum > k && left <= right){
+            sum -= nums[left];
+            left++;
+        }
+        if(sum == k){
+            count++;
+        }
+    }
+    return count;
+}
+```
+
+最优解使用前缀和＋哈希映射
+
+前缀和即：起始索引到所求位置索引的所有数据之和
+
+prefixSum[i] = nums[0] + nums[1] + ... + nums[i-1]
+
+通过前缀和可以求出任意的的区间[L，R]的和
+
+rangeSum = prefixSum[r + 1] - prefixSum[l]
+
+```
+public static int subarraySum(int[] nums, int k){
+    int count = 0;
+    Map<Integer, Integer> map = new HashMap<>();
+    int sum = 0;
+    //初始化前缀和为空数组
+    map.put(0, 1);
+    for (int num : nums) {
+        sum += num;
+        //判断当前位置的前缀和是否等于k
+        //sum - k为前缀和减去k，如果map中存在这个数，则说明存在和为k的子数组
+        if (map.containsKey(sum - k)) {
+            //等于即进行累加
+            count += map.get(sum - k);
+        }
+        //添加当前位置的和进入集合中
+        map.put(sum, map.getOrDefault(sum, 0) + 1);
+    }
+    return count;
+}
+```
+
+sum - k为当前位置的和减去目标值，如果存放前缀和的集合中包含这个数值，则可以证明此时前一个前缀和的数组为子数组并且满足条件
+
+## 滑动窗口最大值
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+/**
+ * 滑动窗口最大值
+ * 给一个整数数组nums，有一个大小为k的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的k个数字。滑动窗口每次只向右移动一位。
+ * 返回滑动窗口中的最大值
+ * 示例1：
+ * 输入：nums = [1,3,-1,-3,5,3,6,7], k = 3
+ * 输出：[3,3,5,5,6,7]
+ * 解释：
+ * 滑动窗口的位置                最大值
+ * [1  3  -1] -3  5  3  6  7       3
+ *  1 [3  -1  -3] 5  3  6  7       3
+ *  1  3 [-1  -3  5] 3  6  7       5
+ *  1  3  -1 [-3  5  3] 6  7       5
+ *  1  3  -1  -3 [5  3  6] 7       6
+ *  1  3  -1  -3  5 [3  6  7]       7
+ *  示例2；
+ *  输入：nums = [1], k = 1
+ *  输出：[1]
+ */
+public class hot11 {
+
+    public static int[] maxSlidingWindow(int[] nums, int k) {
+        ArrayList<Integer> res = new ArrayList<>();
+        for(int right = 0; right < nums.length; right++){
+            int max = Integer.MIN_VALUE;
+            int left = right - k + 1;
+            if(left < 0){
+                continue;
+            }
+            for(int i = left; i <= right; i++){
+                max = Math.max(max, nums[i]);
+            }
+            res.add(max);
+        }
+        return res.stream().mapToInt(Integer::intValue).toArray();
+    }
+}
+```
+
+求滑动窗口那当然是使用滑动窗口来求解，但是超时了。。。笑死个人
+
+定长的滑动窗口，因为它已经明确表示窗口的大小，直接构造窗口即可（真的可惜超时）
+
+最优解是双端队列（单调队列）
+
+使用一个双端队列（Deque）来维护当前窗口内**可能成为最大值**的元素索引。队列保持单调递减，队首始终是当前窗口的最大值
+
+![](assets/求滑动窗口最大值1.png)
+
+![](assets/求滑动窗口最大值2.png)
+
+![](assets/求滑动窗口最大值3.png)
+
+```
+public static int[] maxSlidingWindow(int[] nums, int k) {
+    if( nums == null || nums.length == 0 || k <= 0)
+        return new int[0];
+    Deque<Integer> deque = new LinkedList<>();
+    int[] res = new int[nums.length - k + 1];
+    // 未形成窗口
+    for(int i = 0; i < k; i++) {
+        while(!deque.isEmpty() && deque.peekLast() < nums[i])
+            deque.removeLast();
+        deque.addLast(nums[i]);
+    }
+    res[0] = deque.peekFirst();
+    // 形成窗口后
+    for(int i = k; i < nums.length; i++) {
+        if(deque.peekFirst() == nums[i - k])
+            deque.removeFirst();
+        while(!deque.isEmpty() && deque.peekLast() < nums[i])
+            deque.removeLast();
+        deque.addLast(nums[i]);
+        res[i - k + 1] = deque.peekFirst();
+    }
+    return res;
+}
+```
+
+![](assets/求滑动窗口最大值4.png)
 
