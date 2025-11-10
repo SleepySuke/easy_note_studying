@@ -1215,3 +1215,157 @@ public static int[] maxSlidingWindow(int[] nums, int k) {
 
 ![](assets/求滑动窗口最大值4.png)
 
+## 覆盖最小子串
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 覆盖最小子串
+ * 给一个字符串s、一个字符串t，返回s中包含t的最短子串。如果s中不存在包含t的子串，则返回空字符串""。
+ * 注意：
+ * 对于t 中的重复字符，我们寻找的子字符串中该字符数量必须不少于t 中该字符数量。
+ * 如果s中存在这样的子串，我们保证它是唯一的答案。
+ * 示例 1：
+ * 输入：s = "ADOBECODEBANC", t = "ABC"
+ * 输出："BANC"
+ * 解释：最小覆盖子串 "BANC" 包含来自字符串 t 的 'A'、'B' 和 'C'。
+ * 示例 2：
+ * 输入：s = "a", t = "a"
+ * 输出："a"
+ * 解释：整个字符串 s 是最小覆盖子串。
+ * 示例 3:
+ * 输入: s = "a", t = "aa"
+ * 输出: ""
+ * 解释: t 中两个字符 'a' 均应包含在 s 的最小覆盖子串中。因此，在 s 中没有符合条件的子字符串，返回空字符串。
+ */
+public class hot12 {
+
+    public static String minWindow(String s, String t) {
+        int left = 0;
+        int[] sCount = new int[128];
+        int[] tCount = new int[128];
+        for (char c : t.toCharArray()) {
+            tCount[c]++;
+        }
+        int minStart = -1;
+        int minEnd = s.length();
+        for (int right = 0; right < s.length(); right++) {
+            sCount[s.charAt(right)]++;
+            while (isCovered(sCount, tCount)) {
+                if (right - left < minEnd - minStart) {
+                    minStart = left;
+                    minEnd = right;
+                }
+                sCount[s.charAt(left)]--;
+                left++;
+            }
+        }
+        return minStart < 0 ? "" : s.substring(minStart, minEnd + 1);
+    }
+
+    private static boolean isCovered(int[] sCount, int[] tCount) {
+        for (int i = 'A'; i <= 'Z'; i++) {
+            if (sCount[i] < tCount[i]) {
+                return false;
+            }
+        }
+        for (int i = 'a'; i <= 'z'; i++) {
+            if (sCount[i] < tCount[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
+
+别人的解题思路：
+
+![](assets/最小覆盖子串1.png)
+
+## 最大子数组和
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 最大子数组和
+ * 给一个整数数组，找到一个连续的子数组，使得其和最大。要求时间复杂度为O(n)
+ * 子数组是数组中的一个连续部分
+ * 示例1：
+ * 输入：[-2,1,-3,4,-1,2,1,-5,4]
+ * 输出：6
+ * 解释：连续子数组[4,-1,2,1]的和最大，为6
+ * 示例2：
+ * 输入：[1]
+ * 输出：1
+ * 示例3：
+ * 输入：[5,4,-1,7,8]
+ * 输出：23
+ */
+public class hot13 {
+    public static int maxSubArray(int[] nums) {
+        int sum = 0;
+        int max = Integer.MIN_VALUE;
+        int left = 0;
+        for(int right = 0; right < nums.length; right++){
+            sum += nums[right];
+            max = Math.max(sum, max);
+            //因为可能存在sum小于0的情况，此时小于0则重置窗口
+            //此时的左指针并没有用到
+            if(sum < 0){
+                sum = 0;
+                left = right + 1;
+            }
+        }
+        return max;
+    }
+}
+```
+
+上述为滑动窗口解法，嘻嘻嘻 过了。。。
+
+超过百分百，上述滑动窗口中的left并不需要维持，因为用不到
+
+动态规划解法（会不了一定动态规划，看别人题解）：
+
+![](assets/最大子数组和1.png)
+
+![](assets/最大子数组和2.png)
+
+```
+public static int maxSubArray(int[] nums) {
+   int[] dp = new int[nums.length];
+   //dp[i]表示以nums[i]为结尾的连续子数组的最大和
+   dp[0] = nums[0];
+   int max = 0;
+   for(int i = 1; i < nums.length; i++){
+       if(dp[i-1] > 0){
+           dp[i] = dp[i-1] + nums[i];
+       }else{
+           dp[i] = nums[i];
+       }
+       max = Math.max(max, dp[i]);
+   }
+   return max;
+}
+```
+
+
+
+
+

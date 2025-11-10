@@ -407,6 +407,72 @@ ChatResponse以json格式进行返回数据
 
 ![](assets/ssa54.png)
 
+## 格式化输出
+
+![](assets/ssa55.png)
+
+期待模型不再返回一个java类或者json，可以使用record类进行返回
+
+jdk14以后的新特性，record类
+
+record=entity+lombok
+
+![](assets/ssa56.png)
+
+此时使用record类的时候，不再使用string类型的user()，可以使用Consumer类型的user()，它是一个函数式接口，需要重新实现
+
+此时的返回也需要改变，使用entity进行返回record类，填写其字节码
+
+![](assets/ssa57.png)
+
+![](assets/ssa58.png)
+
+## ChatMemory连续对话保存和持久化
+
+![](assets/ssa59.png)
+
+记忆类型：
+
+![](assets/ssa60.png)
+
+持久化可以保存到redis中，消息对话存在一个上限的
+
+需要引入的依赖：
+
+![](assets/ssa61.png)
+
+1.ChatMemoryRepository接口
+
+2.MessageWindowChatMemory消息窗口聊天记忆
+
+3.顾问（Advisors）MessageChatMemoryAdivosr
+
+需要一个RedisMemoryConfig配置类
+
+![](assets/ssa62.png)
+
+![](assets/ssa63.png)
+
+因为会有多个用户进来对其进行询问，此时可以使用Advisors顾问，对其进行回答，当用户进来提问时，会将该用户的id进行保存，然后advisors进行回答时，通过该id进行回答，此时会将其信息id存入redis中
+
+定义配置类的时候需要改变，需要存入redis的时候，需要明确存入地方类型的库，比如如下：
+
+
+
+![](assets/ssa64.png)
+
+![](assets/ssa65.png)
+
+## 通义万相-文生图
+
+阿里云的两个文生图
+
+通义千问(Qwen-Image)：擅长渲染复杂的中英文文本
+
+通义万相(Wan系列)：用于生成写实图像和摄影级视觉效果
+
+![](assets/ssa66.png)
+
 
 
 
