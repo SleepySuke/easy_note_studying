@@ -1365,7 +1365,134 @@ public static int maxSubArray(int[] nums) {
 }
 ```
 
+## 合并区间
 
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * 合并区间
+ * 以数组intervals表示若干个区间的集合，其中单个区间为intervals[i] = [starti, endi]。请你合并所有重叠的区间，并返回一个不重叠的区间数组。
+ * 示例1：
+ * 输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+ * 输出：[[1,6],[8,10],[15,18]]
+ * 解释：区间 [1,3] 和 [2,6] 重叠，将它们合并为 [1,6]。
+ * 示例2：
+ * 输入：intervals = [[1,4],[4,5]]
+ * 输出：[[1,5]]
+ * 解释：区间 [1,4] 和 [4,5] 可被视为重叠区间。
+ * 示例3：
+ * 输入：intervals = [[4,7],[1,4]]
+ * 输出：[[1,7]]
+ * 解释：区间 [1,4] 和 [4,7] 可被视为重叠区间。
+ */
+public class hot14 {
+
+    public static int[][] merge(int[][] intervals) {
+        if(intervals.length <= 1){
+            return intervals;
+        }
+        //对其进行排序，按每一组的左端点排序，从小到大
+        Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+        //创建列表存储
+        List<int[]> res = new ArrayList<>();
+        //排序之后，第一个区间肯定是最小的，先添加进去
+        res.add(intervals[0]);
+        for (int i = 1; i < intervals.length; i++) {
+            int[] cur = intervals[i];
+            int[] last = res.get(res.size() - 1);
+            //如果当前区间的左端点小于等于前一个区间的右端点，则说明有重叠
+            if(cur[0] <= last[1]){
+                //合并区间，取当前区间的右端点与前一个区间的右端点取最大值
+                last[1] = Math.max(last[1], cur[1]);
+            }else{
+                //没有重叠，则添加
+                res.add(cur);
+            }
+        }
+        return res.toArray(new int[res.size()][]);
+    }
+}
+```
+
+读半天题目才懂，主要理解是当前区间的左端点与前一个区间的右端点进行比较，如果存在当前区间的左端点小于等于前一个的右端点，此时可以合并，即它们之间是一个包含关系，右包含了左，即它们两个连续即可
+
+## 轮转数组
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 轮转数组
+ * 给定一个整数数组nums，将数组中的元素向右轮转k个位置（从数组末尾开始计数）。
+ * 示例1：
+ * 输入：nums = [1,2,3,4,5,6,7], k = 3
+ * 输出：[5,6,7,1,2,3,4]
+ * 解释：
+ * 向右轮转 1 步: [7,1,2,3,4,5,6]
+ * 向右轮转 2 步: [6,7,1,2,3,4,5]
+ * 向右轮转 3 步: [5,6,7,1,2,3,4]
+ * 示例2：
+ * 输入：nums = [-1,-100,3,99], k = 2
+ * 输出：[3,99,-1,-100]
+ * 解释：
+ * 向右轮转 1 步: [99,-1,-100,3]
+ * 向右轮转 2 步: [3,99,-1,-100]
+ */
+public class hot15 {
+
+    public static void main(String[] args) {
+        int[] nums = {1,2,3,4,5,6,7};
+        rotate(nums, 3);
+        for (int i = 0; i < nums.length; i++) {
+            System.out.print(nums[i] + " ");
+        }
+    }
+    public static void rotate(int[] nums, int k) {
+        if(nums == null || nums.length == 0){
+            return;
+        }
+        int n = nums.length;
+        k = k % n;
+        if (k == 0) {
+            return;
+        }
+        reverse(nums,0,n-1);
+        reverse(nums,0,k-1);
+        reverse(nums,k,n-1);
+    }
+
+    public static void reverse(int[] nums, int start, int end) {
+        while (start < end) {
+            int temp = nums[start];
+            nums[start] = nums[end];
+            nums[end] = temp;
+            start++;
+            end--;
+        }
+    }
+}
+```
+
+此方法使用了三次反转数组，将数组分为两个部分，根据移的位数进行反转
+
+先反转整个数组，再反转移位的前k个数，最后反转k~n-1个数
+
+还有一种解法，在笔记数据结构与算法中。。。通过最小公倍数进行移动
 
 
 
