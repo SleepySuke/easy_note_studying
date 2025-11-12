@@ -473,7 +473,99 @@ record=entity+lombok
 
 ![](assets/ssa66.png)
 
+## 文生音
 
+语音合成（cosyvoice）
+
+SpeechSynthesizer
+
+![](assets/ssa67.png)
+
+同步调用
+
+![](assets/ssa68.png)
+
+同步调用比较适合短文本语音合成场景，如果是需要长文本，比较推荐使用流式
+
+DashScopeSpeechSynthesisModel模型
+
+![](assets/ssa69.png)
+
+使用操作
+
+![](assets/ssa70.png)
+
+![](assets/ssa71.png)
+
+![](assets/ssa72.png)
+
+## 向量化
+
+何为向量：
+
+![](assets/ssa73.png)
+
+文本向量化：
+
+使用Embedding Model将数据转为数组，同时打到坐标轴上
+
+![](assets/ssa74.png)
+
+![](assets/ssa75.png)
+
+形成一种指征描述
+
+比如汽车可以有轮子、是否有发动机、是否能在陆地上开、最大乘客数
+
+此时使用向量可以如此表示汽车
+
+Car(4,1,1,5)，这样放置坐标轴上描述
+
+**如何确定哪些最相似：**
+
+![](assets/ssa76.png)
+
+使用余弦相似度来比较
+
+大多数相似度测量均依赖于方向或者同时考虑方向和大小
+
+但是一般使用方向加大小进行比较
+
+**余弦相似度公式：**
+
+consine_similarity(A,B) = (A dot B) / (||A|| * ||B||)
+
+![](assets/ssa77.png)
+
+点积：
+
+a=(x1,y1,z1) b=(x2,y2,z2)
+
+a dot b = x1*x2+y1*y2+z1*z2 （从代数角度看）
+
+几何角度如图：
+
+![](assets/ssa78.png)
+
+![](assets/ssa79.png)
+
+**向量数据库：**
+
+一种专门用于存储、管理和检索向量数据（高维数值数组）的额数据库系统
+
+核心功能：
+
+通过高效的索引结构和相似性计算算法，支持大规模向量数据的快速查询与分析，向量数据库维度越高，查询精准度也越高，查询效果也越好
+
+向量数据库中使用的是相似性搜索，不是精确匹配
+
+使用时，会有一个VectorStore将数据与AI模型集成，数据先加载到矢量数据库中，然后当将用户查询发送给AI时，会先检索相似文档，随后将其作为上下文
+
+并与用户查询一起发送给AI模型，此时即为检索增强生成
+
+![](assets/ssa80.png)
+
+可以使用redis作为向量数据库，此时是RedisStack
 
 
 
