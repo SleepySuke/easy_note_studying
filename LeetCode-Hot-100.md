@@ -1494,5 +1494,193 @@ public class hot15 {
 
 还有一种解法，在笔记数据结构与算法中。。。通过最小公倍数进行移动
 
+## 除自身以外数组的乘积
 
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 除自身以外数组的乘积
+ * 给一个整数数组nums，返回数组answer，其中answer[i]等于nums中除nums[i]之外其余各元素的乘积
+ * 题目数据 保证 nums中任意元素的全部前缀元素和后缀（甚至是整个数组）的乘积都在 32 位 整数范围内
+ * O(n)时间完成
+ * 示例1：
+ * 输入：nums = [1,2,3,4]
+ * 输出：[24,12,8,6]
+ * 示例2：
+ * 输入：nums = [-1,1,0,-3,3]
+ * 输出：[0,0,9,0,0]
+ */
+public class hot16 {
+
+    public static int[] productExceptSelf(int[] nums) {
+        int len = nums.length;
+        int[] ans = new int[len];
+        ans[0] = 1;
+        for(int i = 1; i < len; i++){
+            ans[i] = ans[i - 1] * nums[i - 1];
+        }
+        int right = 1;
+        for(int i = len - 1; i >= 0; i--){
+            ans[i] = ans[i] * right;
+            right *= nums[i];
+        }
+        return ans;
+    }
+}
+```
+
+主要思想：
+
+前缀和成为前缀乘积，求除自身以外的数的积，即要求该目标位置左右两边数的积的总积
+
+先求左边积，再求右边积，最后总积为左边总积与右边总积的积即可
+
+## 寻找两个正序数组的中位数
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * 寻找两个正序数组的中位数
+ * 给定两个大小分别为m和n的正序（从小到大）数组nums1和nums2。请你找出并返回这两个正序数组的 中位数 。
+ * 算法时间复杂度应该为O(log(m+n))
+ * 示例1：
+ * 输入：nums1 = [1,3], nums2 = [2]
+ * 输出：2.00000
+ * 解释：
+ * 合并数组 = [1,2,3] ，中位数 2
+ * 示例2：
+ * 输入：nums1 = [1,2], nums2 = [3,4]
+ * 输出：2.50000
+ * 解释：
+ * 合并数组 = [1,2,3,4] ，中位数 (2 + 3) / 2 = 2.5
+ */
+public class hot17 {
+
+    public static double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        int[] merge = merge(nums1, nums2);
+        int len = merge.length;
+        // 如果数组的长度是奇数，则中位数是中间的数
+        // 如果是偶数，则中位数是中间两个数的平均值
+        if(len % 2 != 0){
+            return merge[len / 2];
+        }else{
+            return (merge[len / 2] + merge[len / 2 - 1]) / 2.0;
+        }
+    }
+
+    //合并两个数组的同时并且进行排序
+    private static int[] merge(int[] nums1, int[] nums2) {
+        int len1 = nums1.length;
+        int len2 = nums2.length;
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < len1; i++) {
+            res.add(nums1[i]);
+        }
+        for (int i = 0; i < len2; i++) {
+            res.add(nums2[i]);
+        }
+        int[] ans = new int[res.size()];
+        for (int i = 0; i < res.size(); i++) {
+            ans[i] = res.get(i);
+        }
+        Arrays.sort(ans);
+        return ans;
+    }
+
+
+}
+```
+
+天才，第一道hard过了，虽然是击败的是百分之5.27，但是能过也是很牛皮了。。。我的时间复杂为O((m+n)log(m+n))，天才。。。
+
+思路就比较简单了，代码中均有注释，主要中位数需要分情况讨论罢了，看最后合并数组的长度
+
+以下是优化（题解）：
+
+使用二分查找，其实我看不懂解析，然后还有一个更优的时间复杂
+
+![](assets/寻找两个有序数组中的中位数1.png)
+
+![](assets/中位数1.png)
+
+![](assets/中位数2.png)
+
+![](assets/中位数3.png)
+
+![](assets/中位数4.png)
+
+```
+public static double findMedianSortedArrays(int[] nums1, int[] nums2) {
+    int length1 = nums1.length, length2 = nums2.length;
+    int totalLength = length1 + length2;
+    if (totalLength % 2 == 1) {
+        int midIndex = totalLength / 2;
+        double median = getKthElement(nums1, nums2, midIndex + 1);
+        return median;
+    } else {
+        int midIndex1 = totalLength / 2 - 1, midIndex2 = totalLength / 2;
+        double median = (getKthElement(nums1, nums2, midIndex1 + 1) + getKthElement(nums1, nums2, midIndex2 + 1)) / 2.0;
+        return median;
+    }
+}
+
+public static int getKthElement(int[] nums1, int[] nums2, int k) {
+    /* 主要思路：要找到第 k (k>1) 小的元素，那么就取 pivot1 = nums1[k/2-1] 和 pivot2 = nums2[k/2-1] 进行比较
+     * 这里的 "/" 表示整除
+     * nums1 中小于等于 pivot1 的元素有 nums1[0 .. k/2-2] 共计 k/2-1 个
+     * nums2 中小于等于 pivot2 的元素有 nums2[0 .. k/2-2] 共计 k/2-1 个
+     * 取 pivot = min(pivot1, pivot2)，两个数组中小于等于 pivot 的元素共计不会超过 (k/2-1) + (k/2-1) <= k-2 个
+     * 这样 pivot 本身最大也只能是第 k-1 小的元素
+     * 如果 pivot = pivot1，那么 nums1[0 .. k/2-1] 都不可能是第 k 小的元素。把这些元素全部 "删除"，剩下的作为新的 nums1 数组
+     * 如果 pivot = pivot2，那么 nums2[0 .. k/2-1] 都不可能是第 k 小的元素。把这些元素全部 "删除"，剩下的作为新的 nums2 数组
+     * 由于我们 "删除" 了一些元素（这些元素都比第 k 小的元素要小），因此需要修改 k 的值，减去删除的数的个数
+     */
+
+    int length1 = nums1.length, length2 = nums2.length;
+    int index1 = 0, index2 = 0;
+    int kthElement = 0;
+
+    while (true) {
+        // 边界情况
+        if (index1 == length1) {
+            return nums2[index2 + k - 1];
+        }
+        if (index2 == length2) {
+            return nums1[index1 + k - 1];
+        }
+        if (k == 1) {
+            return Math.min(nums1[index1], nums2[index2]);
+        }
+
+        // 正常情况
+        int half = k / 2;
+        int newIndex1 = Math.min(index1 + half, length1) - 1;
+        int newIndex2 = Math.min(index2 + half, length2) - 1;
+        int pivot1 = nums1[newIndex1], pivot2 = nums2[newIndex2];
+        if (pivot1 <= pivot2) {
+            k -= (newIndex1 - index1 + 1);
+            index1 = newIndex1 + 1;
+        } else {
+            k -= (newIndex2 - index2 + 1);
+            index2 = newIndex2 + 1;
+        }
+    }
+}
+```
 
