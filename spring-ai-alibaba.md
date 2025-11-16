@@ -565,7 +565,83 @@ a dot b = x1*x2+y1*y2+z1*z2 （从代数角度看）
 
 ![](assets/ssa80.png)
 
-可以使用redis作为向量数据库，此时是RedisStack
+可以使用redis作为向量数据库，此时是RedisStack（redis8）
+
+![](assets/ssa81.png)
+
+文本向量化模型：
+
+![](assets/ssa82.png)
+
+redis stack的配置：
+
+![](assets/ssa83.png)
+
+![](assets/ssa84.png)
+
+Redis Stack优势
+
+![](assets/ssa.png)
+
+使用docker安装
+
+docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server
+
+![](assets/ssa85.png)
+
+![](assets/ssa86.png)
+
+![](assets/ssa87.png)
+
+接着从向量数据库中查找
+
+![](assets/ssa88.png)
+
+知识图谱的构建：
+
+![](assets/ssa89.png)
+
+## RAG
+
+RAG：检索增强生成
+
+可使用知识图谱，向量化数据库存储，为大模型添加知识
+
+LLM（文件大模型）存在的缺陷：
+
+1.知识不是实时的，不具备知识更新
+
+2.不理解私有的领域/业务知识
+
+3.回答可能合理但实际是错误信息，AI幻觉
+
+知识幻觉：
+
+1.已读乱回 2.已读不回 3.似是而非
+
+RAG流程实现：索引和检索，先建索引再去检索
+
+索引：
+
+![](assets/ssa90.png)
+
+检索：
+
+![](assets/ssa91.png)
+
+初始化向量数据库：
+
+![](assets/ssa93.png)
+
+![](assets/ssa92.png)
+
+预热知识库时，每次重启都会新增，内容都一致并且会造成内存暴涨，对知识库造成压力，因此需要进行去重数据，但是这里会存在一个问题，如果提交的rag文档内容改变，再次去提交时会无法更新知识库
+
+![](assets/ssa94.png)
+
+对于rag文档内容改变暂且不知道如何解决
+
+
 
 
 

@@ -1684,3 +1684,191 @@ public static int getKthElement(int[] nums1, int[] nums2, int k) {
 }
 ```
 
+## 缺失的第一个正数
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 缺失的第一个正数
+ * 给定一个未排序的整数数组nums，找出其中没有出现的最小的正整数。
+ * 实现时间复杂度为O(n)，并且只使用常数级别额外空间。
+ * 输入：[1,2,0]
+ * 输出：3
+ * 解释：范围为[1,2]，因此缺失的正整数为3。
+ * 输入：[3,4,-1,1]
+ * 输出：2
+ * 解释：1在数组中，因此缺失的正整数为2。
+ * 输入：[7,8,9,11,12]
+ * 输出：1
+ * 解释：最小的正整数为1没有出现
+ */
+public class hot18 {
+
+    public static int firstMissingPositive(int[] nums) {
+        int n = nums.length;
+        for(int i = 0; i < n; i++){
+            // 将当前元素与它应该在的位置进行交换
+            // 如果当前元素小于等于0或者大于n或者当前元素在它应该在的位置，则跳过
+            while(nums [i] > 0 && nums [i] <= n && nums [nums [i] - 1] != nums [i]){
+                swap(nums, i, nums [i] - 1);
+            }
+        }
+        for(int i = 0; i < n; i++){
+            if(nums [i] != i + 1){
+                return i + 1;
+            }
+        }
+        return n + 1;
+    }
+
+    public static void swap(int[] nums, int i, int j){
+        int temp = nums [i];
+        nums [i] = nums [j];
+        nums [j] = temp;
+    }
+}
+```
+
+解题思路：
+
+缺失的第一个正数即该元素属于范围[1,N]中，所以对于任何n <= 0的数都可以不返回。此外可以理解到n属于[1,N]中的话，可以如此进行具体化数据，因为数组下标均是从0开始的，所以当数组有序时，比如[1,2,3]，此时1对应的下标为0,2对应的为1，3对应的2，而此时这个数组中未出现的最小正数会为4，它的下标为3。
+
+所以我们可以得到规律，在一个有序的数组中，它所对应的下标为
+
+idx = nums[i] - 1
+
+所以有序的数组对应的缺失最小正数可以以下标进行返回 idx + 1
+
+如果当前的数组元素均是连续的且在数组长度范围内即可直接返回当前数组长度＋1
+
+如果大于长度的话也是通过下标返回
+
+
+
+还有一个官解，使用标记，将数组设计为哈希表
+
+![](assets/缺失的第一个正数1.png)
+
+![](assets/缺失的第一个正数2.png)
+
+```
+class Solution {
+    public int firstMissingPositive(int[] nums) {
+        int n = nums.length;
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] <= 0) {
+                nums[i] = n + 1;
+            }
+        }
+        for (int i = 0; i < n; ++i) {
+            int num = Math.abs(nums[i]);
+            if (num <= n) {
+                nums[num - 1] = -Math.abs(nums[num - 1]);
+            }
+        }
+        for (int i = 0; i < n; ++i) {
+            if (nums[i] > 0) {
+                return i + 1;
+            }
+        }
+        return n + 1;
+    }
+}
+```
+
+## 矩阵置零
+
+![](assets/矩阵置零1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 矩阵置零
+ * 输入一个m*n的矩阵，将矩阵中元素为0的行和列置零 使用原地算法
+ * 输入：matrix = [[1,1,1],[1,0,1],[1,1,1]]
+ * 输出：[[1,0,1],[0,0,0],[1,0,1]]
+ * 输入：matrix = [[0,1,2,0],[3,4,5,2],[1,3,1,5]]
+ * 输出：[[0,0,0,0],[0,4,5,0],[0,3,1,0]]
+ */
+public class hot19 {
+    public static void setZeroes(int[][] matrix) {
+        //当前行列
+        int row = matrix.length;
+        int col = matrix[0].length;
+        //创建一个标记二维数组，用来记录当前行和列是否为0
+        boolean[][] visited = new boolean[row][col];
+        //初始化
+        visited[0][0] = false;
+        //遍历矩阵
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                //矩阵中为0的行和列标记为true
+                if (matrix[i][j] == 0) {
+                    visited[i][j] = true;
+                }
+            }
+        }
+        //遍历标记数组
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                //标记为true的行和列置零
+                if (visited[i][j]) {
+                    for (int k = 0; k < col; k++) {
+                        matrix[i][k] = 0;
+                    }
+                    for (int k = 0; k < row; k++) {
+                        matrix[k][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+```
+
+直接遍历标记即可，我感觉需要剪枝的，但一提交过了。。。哈哈哈哈。。。
+
+官方的题解使用单个标记量
+
+```
+class Solution {
+    public void setZeroes(int[][] matrix) {
+        int m = matrix.length, n = matrix[0].length;
+        boolean flagCol0 = false;
+        for (int i = 0; i < m; i++) {
+            if (matrix[i][0] == 0) {
+                flagCol0 = true;
+            }
+            for (int j = 1; j < n; j++) {
+                if (matrix[i][j] == 0) {
+                    matrix[i][0] = matrix[0][j] = 0;
+                }
+            }
+        }
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = 1; j < n; j++) {
+                if (matrix[i][0] == 0 || matrix[0][j] == 0) {
+                    matrix[i][j] = 0;
+                }
+            }
+            if (flagCol0) {
+                matrix[i][0] = 0;
+            }
+        }
+    }
+}
+```
+
