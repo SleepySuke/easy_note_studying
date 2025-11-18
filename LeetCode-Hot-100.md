@@ -2004,3 +2004,184 @@ public static void rotate(int[][] matrix) {
 
 ![](assets/旋转图像5.png)
 
+## 搜索二维矩阵 II
+
+![](assets/搜索二维矩阵II解题1.png)
+
+![](assets/搜索二维矩阵II解题2.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 搜索二维矩阵II
+ * 编写一个高效的算法搜索 m x n 矩阵 matrix 中的一个目标值 target 。该矩阵具有以下特性：
+ * 每行的元素从左到右升序排列。
+ * 每列的元素从上到下升序排列
+ * 示例 1：
+ * 输入：matrix = [[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]], target = 5
+ * 输出：true
+ * 示例 2：
+ * 输入：matrix = [[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]], target = 20
+ * 输出：false
+ */
+public class hot22 {
+
+    public static boolean searchMatrix(int[][] matrix, int target) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        for(int i = 0; i < row; i++){
+            for(int j = col - 1; j >= 0; j--){
+                if(matrix[i][j] == target){
+                    return true;
+                }
+                if(matrix[i][j] > target){
+                    continue;
+                }
+                if(matrix[i][j] < target){
+                    break;
+                }
+            }
+        }
+        return false;
+    }
+}
+```
+
+暴力破解遍历矩阵即可
+
+
+
+以下是二分查找法：
+
+```
+public static boolean searchMatrix(int[][] matrix, int target) {
+    for (int[] ans : matrix) {
+        int index = binarySearch(ans, target);
+        if(index != -1){
+            return true;
+        }
+    }
+    return false;
+}
+
+public static int binarySearch(int[] nums, int target) {
+    int left = 0;
+    int right = nums.length - 1;
+    while(left <= right){
+        int mid = left + (right - left) / 2;
+        if(nums[mid] == target){
+            return mid;
+        } else if (nums[mid] < target) {
+            left = mid + 1;
+        }else{
+            right = mid - 1;
+        }
+    }
+    return -1;
+}
+```
+
+一种Z字形搜索方法 当学习使用
+
+```
+public static boolean searchMatrix(int[][] matrix, int target) {
+    int m = matrix.length, n = matrix[0].length;
+    int x = 0, y = n - 1;
+    while (x < m && y >= 0) {
+        if (matrix[x][y] == target) {
+            return true;
+        }
+        if (matrix[x][y] > target) {
+            --y;
+        } else {
+            ++x;
+        }
+    }
+    return false;
+}
+```
+
+![](assets/搜索矩阵II解题3.png)
+
+## 相加链表
+
+![](assets/相加链表1.png)
+
+![](assets/相加链表2.png)
+
+![](assets/相加链表3.png)
+
+```
+public class ListNode {
+    int val;
+    ListNode next;
+
+    ListNode(int x) {
+        val = x;
+        next = null;
+    }
+}
+
+
+public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+    Set<ListNode> set = new HashSet<>();
+    ListNode temp = headA;
+    while (temp != null) {
+        set.add(temp);
+        temp = temp.next;
+    }
+    temp = headB;
+    while (temp != null) {
+        if (set.contains(temp)) {
+            return temp;
+        }
+        temp = temp.next;
+    }
+    return null;
+}
+```
+
+解题思路：使用Set集合，因为Set集合具有去重的特性
+
+Set集合存储每个链表的节点，先遍历链表headA，并将headA中的每个节点加入Set集合中。再去遍历headB，对于遍历到的每个节点，判断该节点是否在集合中
+
+1.如果当前不在集合中，则继续遍历下一个节点
+
+2.如果当前节点在集合中，则后续节点都在集合中，即从当前节点开始的所有节点都在两个链表的相交部分
+
+**双指针解法：**
+
+![](assets/相加链表4.png)
+
+![](assets/相加链表5.png)
+
+```
+public class Solution {
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        if (headA == null || headB == null) {
+            return null;
+        }
+        ListNode pA = headA, pB = headB;
+        while (pA != pB) {
+            pA = pA == null ? headB : pA.next;
+            pB = pB == null ? headA : pB.next;
+        }
+        return pA;
+    }
+}
+```
+
+![](assets/链表相加7.png)
+
+![](assets/相加链表8.png)
+
+两条链表同时遍历，遍历完本身之后再去遍历另一条，如果此时两个指针遍历的时候遍历到了同一个节点，此时就是他们相交，如果未相遇而遍历完两条链表，此时就是无交点
+
+
+
