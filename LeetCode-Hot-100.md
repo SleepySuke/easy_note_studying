@@ -2183,5 +2183,524 @@ public class Solution {
 
 两条链表同时遍历，遍历完本身之后再去遍历另一条，如果此时两个指针遍历的时候遍历到了同一个节点，此时就是他们相交，如果未相遇而遍历完两条链表，此时就是无交点
 
+## 反转链表
 
+![](assets/反转链表1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 链表翻转
+ * 给你单链表的头节点 head ，请你反转链表，并返回反转后的链表。
+ * 输入：head = [1,2,3,4,5]
+ * 输出：[5,4,3,2,1]
+ * 输入：head = [1,2]
+ * 输出：[2,1]
+ * 输入：head = []
+ * 输出：[]
+ */
+public class hot24 {
+
+    public class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode() {
+        }
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    public ListNode reverseList(ListNode head) {
+        ListNode pre = null;
+        ListNode cur = head;
+        while (cur != null) {
+            // 保存当前节点的下一个节点
+            ListNode temp = cur.next;
+            // 断开当前节点的next指针
+            cur.next = pre;
+            // pre指针都向右移动一位
+            pre = cur;
+            // cur指针向右移动一位
+            cur = temp;
+        }
+        return pre;
+    }
+}
+```
+
+![](assets/反转链表2.png)
+
+递归的思想：
+
+![](assets/反转链表3.png)
+
+```
+class Solution {
+    public ListNode reverseList(ListNode head) {
+        return recur(head, null);    // 调用递归并返回
+    }
+    private ListNode recur(ListNode cur, ListNode pre) {
+        if (cur == null) return pre; // 终止条件
+        ListNode res = recur(cur.next, cur);  // 递归后继节点
+        cur.next = pre;              // 修改节点引用指向
+        return res;                  // 返回反转链表的头节点
+    }
+}
+```
+
+## 回文链表
+
+![](assets/回文链表1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 回文链表
+ * 给一个单链表的头节点head，判断是否为回文链表，如果是回文链表，返回true，否则返回false
+ * 示例1：
+ * 输入：head = [1,2,2,1]
+ * 输出：true
+ * 示例2：
+ * 输入：head = [1,2]
+ * 输出：false
+ */
+
+public class hot25 {
+
+    public class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode() {
+        }
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+
+    public boolean isPalindrome(ListNode head) {
+        List<Integer> list = new ArrayList<>();
+        // 将链表中的元素添加到list中
+        while(head != null){
+            list.add(head.val);
+            head = head.next;
+        }
+        //双指针遍历list集合，判断是否为回文
+        int left = 0;
+        int right = list.size() - 1;
+        while(left < right){
+            if(list.get(left) != list.get(right)){
+                return false;
+            }
+            left++;
+            right--;
+        }
+        return true;
+    }
+}
+```
+
+解题思路：先将链表数据存入集合当中，再使用双指针遍历即可
+
+时间复杂O(n) 空间复杂O(n) 因为多用了一个集合进行存储
+
+使用快慢指针解决，此时的空间为O(1)如下：
+
+![](assets/回文链表2.png)
+
+![](assets/回文链表3.png)
+
+![](assets/回文链表4.png)
+
+```
+class Solution {
+    public boolean isPalindrome(ListNode head) {
+        ListNode mid = middleNode(head);
+        ListNode head2 = reverseList(mid);
+        while (head2 != null) {
+            if (head.val != head2.val) { // 不是回文链表
+                return false;
+            }
+            head = head.next;
+            head2 = head2.next;
+        }
+        return true;
+    }
+
+    // 876. 链表的中间结点
+    private ListNode middleNode(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+    }
+
+    // 206. 反转链表
+    private ListNode reverseList(ListNode head) {
+        ListNode pre = null;
+        ListNode cur = head;
+        while (cur != null) {
+            ListNode nxt = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = nxt;
+        }
+        return pre;
+    }
+}
+```
+
+## 环形链表
+
+![](assets/环形链表1png.png)
+
+![](assets/环形链表2.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 环形链表
+ * 给一个单链表，判断链表中是否有环。
+ * 如果链表中有某个节点，可以通过连续跟踪 next 指针再次到达，则链表中存在环。 为了表示给定链表中的环，
+ * 我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。
+ * 注意：pos 不作为参数进行传递，仅仅是为了标识链表的实际情况。
+ */
+public class hot26 {
+
+    class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode(int x) {
+            val = x;
+            next = null;
+        }
+    }
+
+    public boolean hasCycle(ListNode head) {
+        if (head == null || head.next == null) {
+            return false;
+        }
+        ListNode slow = head;
+        ListNode fast = head.next;
+        while(fast != null && fast.next != null){
+            if(slow == fast){
+                return true;
+            }
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return false;
+    }
+}
+```
+
+快慢指针
+
+## 环形链表II
+
+![](assets/环形链表II1.png)
+
+![](assets/环形链表II2.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 环形链表II
+ * 给定一个链表的头节点 head ，返回链表开始入环的第一个节点。 如果链表无环，则返回 null。
+ * 如果链表有某个节点，可以通过连续跟踪 next 指针再次到达，则链表中存在环。
+ * 为了表示给定链表中的环，评测系统内部使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。如果 pos 是 -1，则在该链表中没有环。
+ * 注意：pos 不作为参数进行传递，仅仅是为了标识链表的实际情况。
+ */
+public class hot27 {
+    class ListNode {
+        int val;
+        ListNode next;
+        ListNode(int x) {
+            val = x;
+            next = null;
+        }
+    }
+    public ListNode detectCycle(ListNode head) {
+        if (head == null || head.next == null) {
+            return null;
+        }
+        ListNode slow = head;
+        ListNode fast = head;
+        while(fast != null){
+            slow = slow.next;
+            if(fast.next != null){
+                fast = fast.next.next;
+            }else{
+                return null;
+            }
+            if(slow == fast){
+                ListNode index = head;
+                while(index != slow){
+                    index = index.next;
+                    slow = slow.next;
+                }
+                return index;
+            }
+        }
+        return null;
+    }
+}
+```
+
+## K个一组翻转链表
+
+![](assets/K个一组翻转链表1.png)
+
+![](assets/K个一组翻转链表2.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ *K个一组翻转链表
+ * 给你一个链表，每 k 个节点一组进行翻转，请你返回翻转后的链表。
+ * k 是一个正整数，它的值小于或等于链表的长度。
+ * 如果节点总数不是 k 的整数倍，那么请将最后剩余的节点保持原有顺序。
+ * 示例：
+ * 给你这个链表：1->2->3->4->5
+ * 当 k = 2 时，应当返回: 2->1->4->3->5
+ */
+public class hot28 {
+
+    class ListNode{
+        int val;
+        ListNode next;
+        ListNode(){}
+
+        ListNode(int x){
+            val = x;
+        }
+
+        ListNode(int x, ListNode next){
+            val = x;
+            this.next = next;
+        }
+    }
+
+    public ListNode reverseKGroup(ListNode head, int k) {
+        if(head == null || head.next == null){
+            return head;
+        }
+        //设置一个游标
+        ListNode cur = head;
+        //获取k个节点
+        for(int i = 0; i < k; i++){
+            //获取k个节点失败
+            if(cur == null){
+                return head;
+            }
+            //获取k个节点成功
+            cur = cur.next;
+        }
+        //翻转k个节点
+        ListNode newHead = reverse(head, cur);
+        head.next = reverseKGroup(cur, k);
+        return newHead;
+    }
+
+    public ListNode reverse(ListNode head, ListNode tail){
+        //设置一个游标
+        ListNode pre = null;
+        //翻转链表
+        while(head != tail){
+            //获取下一个节点
+            ListNode temp = head.next;
+            //断开连接
+            head.next = pre;
+            //连接
+            pre = head;
+            //获取下一个节点
+            head = temp;
+        }
+        return pre;
+    }
+}
+```
+
+解题思路：
+
+设置当前节点，去判断需要反转的节点数，以当前节点开始数到k
+
+随后翻转head与当前数的节点cur
+
+反转节点直接反转head到cur构成的链表即可
+
+从头到尾进行判断，先设置一个临时节点，再进行移动节点翻转，
+
+使用临时节点temp，将第一个节点与下一个节点断开，再连接即可
+
+如此往复
+
+但是这时候的时间复杂为O(n/k)，进行递归
+
+O(1)的空间（别人的题解）：
+
+```
+public ListNode reverseKGroup(ListNode head, int k) {
+    ListNode dummy = new ListNode(0);
+    dummy.next = head;
+
+    ListNode pre = dummy;
+    ListNode end = dummy;
+
+    while (end.next != null) {
+        for (int i = 0; i < k && end != null; i++) end = end.next;
+        if (end == null) break;
+        ListNode start = pre.next;
+        ListNode next = end.next;
+        end.next = null;
+        pre.next = reverse(start);
+        start.next = next;
+        pre = start;
+
+        end = pre;
+    }
+    return dummy.next;
+}
+
+private ListNode reverse(ListNode head) {
+    ListNode pre = null;
+    ListNode curr = head;
+    while (curr != null) {
+        ListNode next = curr.next;
+        curr.next = pre;
+        pre = curr;
+        curr = next;
+    }
+    return pre;
+}
+```
+
+![](assets/K个一组翻转链表3.png)
+
+## 合并两个有序链表
+
+![](assets/合并两个有序链表1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 合并两个有序链表
+ * 将两个升序链表合并为一个新的 升序 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。
+ * 输入：l1 = [1,2,4], l2 = [1,3,4]
+ * 输出：[1,1,2,3,4,4]
+ * 输入：l1 = [], l2 = []
+ * 输出：[]
+ * 输入：l1 = [], l2 = [0]
+ * 输出：[0]
+ */
+public class hot29 {
+    class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode() {
+        }
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if (l1 == null) {
+            return l2;
+        }
+        if (l2 == null) {
+            return l1;
+        }
+        ListNode head = new ListNode(0);
+        ListNode cur = head;
+        while(l1 != null && l2 != null){
+            if(l1.val < l2.val){
+                cur.next = l1;
+                l1 = l1.next;
+            }else{
+                cur.next = l2;
+                l2 = l2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = l1 == null ? l2 : l1;
+        return head.next;
+    }
+}
+```
+
+解题思路：
+
+初始化一个临时头节点用于伪造链表，同时遍历两条链表，随后模拟移动连接合并链表即可，最后的节点返回应该为为节点的下一个节点
+
+合并链表时会出现两种情况：
+
+1.list1为空，此时list2添加至最后
+
+2.不为空则是list1最后
 

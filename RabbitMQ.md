@@ -158,3 +158,35 @@ spring:
 
 消费者、生产者均需要配置文件
 
+## 生产者重连
+
+![](assets/RabbitMQ14.png)
+
+![](assets/RabbitMQ15.png)
+
+这个是连接时的重试，不是消息发送失败时的重试
+
+## 生产者确认
+
+![](assets/RabbitMQ16.png)
+
+确认配置
+
+![](assets/RabbitMQ17.png)
+
+每一个RabbitTemplate只能配置一个ReturnCallback，所以需要再项目启动过程中配置，以下是Return确认方式
+
+![](assets/RabbitMQ18.png)
+
+publisher配置中的return主要是返回路由失败消息
+
+以下是ConfirmCallback
+
+![](assets/RabbitMQ19.png)
+
+如何保证生产者的可靠性？
+
+RabbitMQ中存在一种重连机制，当网络抖动时，我们可以进行重连，避免网络抖动导致发送消息失败，除此RabbitMQ还有一个生产者确认机制，当消息发送失败会有一个ack回执，发送失败则是nack回执，这样就保证了生产者的可靠性，但此时会有额外的资源开销，一般情况下是不需要确认回执的
+
+
+
