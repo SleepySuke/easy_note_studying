@@ -2704,3 +2704,956 @@ public class hot29 {
 
 2.不为空则是list1最后
 
+## 合并K个升序链表
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 合并K个升序链表
+ * 给一个链表数组，每个链表都已经按升序排列
+ * 请将它们合并为一个新的 升序 链表并返回。
+ * 示例 1：
+ * 输入：lists = [[1,4,5],[1,3,4],[2,6]]
+ * 输出：[1,1,2,3,4,4,5,6]
+ * 解释：链表数组如下：
+ * [
+ * 1->4->5,
+ * 1->3->4,
+ * 2->6
+ * ]
+ * 合并后的链表是 1->1->2->3->4->4->5->6.
+ * 示例 2：
+ * 输入：lists = []
+ * 输出：[]
+ * 示例 3：
+ * 输入：lists = [[]]
+ * 输出：[]
+ */
+public class hot30 {
+    class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode() {
+        }
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) {
+            return null;
+        }
+        ListNode newList = null;
+        for (int i = 0; i < lists.length; i++) {
+            newList = mergeTwoLists(newList, lists[i]);
+        }
+        return newList;
+    }
+
+    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+        if (list1 == null) {
+            return list2;
+        }
+        if (list2 == null) {
+            return list1;
+        }
+        ListNode head = new ListNode(0);
+        ListNode cur = head;
+        while (list1 != null && list2 != null) {
+            if(list1.val < list2.val){
+                cur.next = list1;
+                list1 = list1.next;
+            }else{
+                cur.next = list2;
+                list2 = list2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = list1 == null ? list2 : list1;
+        return head.next;
+    }
+}
+```
+
+合并两个有序链表的思路一致，不过是两个变成了k个，变成k个之后，直接遍历长度即可
+
+官方题解对我的方法优化：
+
+![](assets/合并K个有序链表1.png)
+
+```
+public ListNode mergeKLists(ListNode[] lists) {
+    if (lists == null || lists.length == 0) {
+        return null;
+    }
+   return merge(lists, 0, lists.length - 1);
+}
+public ListNode merge(ListNode[] lists, int left, int right) {
+       if(left == right){
+           return lists[left];
+       }
+       if(left > right){
+           return null;
+       }
+       int mid = left + (right - left) / 2;
+       ListNode leftNode = merge(lists, left, mid);
+       ListNode rightNode = merge(lists, mid + 1, right);
+       return mergeTwoLists(leftNode, rightNode);
+    }
+
+public ListNode mergeTwoLists(ListNode list1, ListNode list2) {
+    if (list1 == null) {
+        return list2;
+    }
+    if (list2 == null) {
+        return list1;
+    }
+    ListNode head = new ListNode(0);
+    ListNode cur = head;
+    while (list1 != null && list2 != null) {
+        if(list1.val < list2.val){
+            cur.next = list1;
+            list1 = list1.next;
+        }else{
+            cur.next = list2;
+            list2 = list2.next;
+        }
+        cur = cur.next;
+    }
+    cur.next = list1 == null ? list2 : list1;
+    return head.next;
+}
+```
+
+## 两数相加
+
+![](assets/两数相加1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 两数相加
+ * 给两个非空的链表，表示两个非负的整数。它们每位数字都是按照逆序的方式存储的，并且每个节点只能存储一位数字。
+ * 请你将两个数相加，并以相同形式返回一个链表。
+ * 可以假设除了数字0之外，这两个数都不会以0开头。
+ * 输入：l1 = [2,4,3], l2 = [5,6,4]
+ * 输出：[7,0,8]
+ * 解释：342 + 465 = 807.
+ * 输入：l1 = [0], l2 = [0]
+ * 输出：[0]
+ * 输入：l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]
+ * 输出：[8,9,9,9,0,0,0,1]
+ */
+public class hot31 {
+    class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode() {
+        }
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dumpy = new ListNode(0);
+        ListNode cur = dumpy;
+        //设置一个进位值
+        int temp = 0;
+        //链表进行相加即可
+        while (l1 != null || l2 != null || temp != 0) {
+            int a = l1 == null ? 0 : l1.val;
+            int b = l2 == null ? 0 : l2.val;
+            int sum = a + b + temp;
+            temp = sum / 10;
+            cur.next = new ListNode(sum % 10);
+            cur = cur.next;
+            if (l1 != null) {
+                l1 = l1.next;
+            }
+            if (l2 != null) {
+                l2 = l2.next;
+            }
+        }
+        if(temp > 0){
+            cur.next = new ListNode(temp);
+        }
+        return dumpy.next;
+    }
+}
+```
+
+两个链表进来，此时都是逆序存储数字的，看到结果可以发现其实可以直接相对应的位置进行相加即可
+
+同时遍历两个链表，相同位置的数进行相加并且再加上其进位值temp
+
+temp = sum/10求其相加后的进位值，dumpy为一个伪节点，用于连接两个链表相加后的新链表，相同位置相加，cur节点连接新的节点sum%10，
+
+cur移动至该节点，如果最后进位值大于0的话，它就需要新增一个新节点进位值
+
+## 删除链表的倒数第N个节点
+
+![](assets/删除链表的倒数第N个节点.png)
+
+```
+public ListNode removeNthFromEnd(ListNode head, int n) {
+    if(head == null){
+        return null;
+    }
+    int listLen = getListLen(head);
+    if(listLen == n){
+        return head.next;
+    }
+    ListNode cur = head;
+    for(int i = 1; i < listLen - n; i++){
+        cur = cur.next;
+    }
+    cur.next = cur.next.next;
+    return head;
+}
+
+public int getListLen(ListNode head){
+    int len = 0;
+    while(head != null){
+        len++;
+        head = head.next;
+    }
+    return len;
+}
+```
+
+先计算出链表的长度，再去遍历链表，遍历到目标节点的前一个位置，将其断开，让该位置的节点直接指向目标节点的后一个位置即cur.next = cur.next.next
+
+## 两两交换链表中的节点
+
+![](assets/两两交换链表中的节点1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 两两交换链表中的节点
+ * 给一个链表，两两交换其中的节点，并返回交换后的链表。必须在不修改节点内部值的情况下完成。
+ * 示例1：
+ * 输入：head = [1,2,3,4]
+ * 输出：[2,1,4,3]
+ * 示例2：
+ * 输入：head = []
+ * 输出：[]
+ * 示例3：
+ * 输入：head = [1]
+ * 输出：[1]
+ */
+public class hot33 {
+    class ListNode{
+        int val;
+        ListNode next;
+        ListNode(int x){
+            val = x;
+        }
+        ListNode(int x,ListNode next){
+            val = x;
+            this.next = next;
+        }
+        ListNode(){
+
+        }
+    }
+
+    public ListNode swapPairs(ListNode head) {
+        if(head == null || head.next == null){
+            return head;
+        }
+        ListNode next = head.next;
+        head.next = swapPairs(next.next);
+        next.next = head;
+        return next;
+    }
+}
+```
+
+不用想直接使用递归，刚开始一直用两个指针，然后一直没找到出口，最后仔细思考，发现只需要一个指针即可，头节点与其下一个节点进行交换，原地置换，原始的头节点会变为新链表的第二个节点，原链表的第二个节点会变为新链表的头节点
+
+此时递归深度为O(n)
+
+要使空间为O(1)可使用迭代法
+
+创建一个哑节点，哑节点指向头节点，当前节点cur为哑节点，当前节点的后两个节点进行交换即可
+
+```
+public ListNode swapPairs(ListNode head) {
+    if(head == null || head.next == null){
+        return head;
+    }
+    ListNode dumpy = new ListNode(0);
+    dumpy.next = head;
+    ListNode cur = dumpy;
+    while(cur.next != null && cur.next.next != null){
+        ListNode first = cur.next;
+        ListNode second = cur.next.next;
+        first.next = second.next;
+        cur.next = second;
+        second.next = first;
+        cur = first;
+    }
+    return dumpy.next;
+}
+```
+
+## 随机链表的复制
+
+![](assets/随机链表的复制1.png)
+
+![](assets/随机链表的复制2.png)
+
+
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 随机链表的复制
+ * 给一个长度为n的链表，每个节点包含一个额外指针random，该指针可以指向链表中的任意节点或者null。
+ * 构造这个链表深拷贝。深拷贝应该正好与原始链表具有相同的值。每个节点的random指针也都应指向复制链表中对应节点。
+ * 示例：
+ * 输入：head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+ * 输出：[[7,null],[13,0],[11,4],[10,2],[1,0]]
+ * 输入：head = [[1,1],[2,1]]
+ * 输出：[[1,1],[2,1]]
+ * 输入：head = [[3,null],[3,0],[3,null]]
+ * 输出：[[3,null],[3,0],[3,null]]
+ */
+public class hot34 {
+    class Node{
+        int val;
+        Node next;
+        Node random;
+        Node(int x){
+            val = x;
+        }
+        Node(int x,Node next,Node random){
+            val = x;
+            this.next = next;
+            this.random = random;
+        }
+        Node(){
+
+        }
+    }
+
+    public Node copyRandomList(Node head) {
+        if(head == null){
+            return null;
+        }
+        Node cur = head;
+        // 1. 复制各节点，并构建拼接链表
+        while(cur != null) {
+            Node tmp = new Node(cur.val);
+            tmp.next = cur.next;
+            cur.next = tmp;
+            cur = tmp.next;
+        }
+        // 2. 构建各新节点的 random 指向
+        cur = head;
+        while(cur != null) {
+            if(cur.random != null)
+                cur.next.random = cur.random.next;
+            cur = cur.next.next;
+        }
+        // 3. 拆分两链表
+        cur = head.next;
+        Node pre = head, res = head.next;
+        while(cur.next != null) {
+            pre.next = pre.next.next;
+            cur.next = cur.next.next;
+            pre = pre.next;
+            cur = cur.next;
+        }
+        pre.next = null; // 单独处理原链表尾节点
+        return res;      // 返回新链表头节点
+    }
+}
+```
+
+题目都没读懂，看的别人题解。。。
+
+理解了一晚上，读懂了题目，即对原链表进行一次深拷贝，深拷贝即是将原对象拷一份副本出来，而不是单纯的复制其值，需要一个空间地址，存储一样的数据，相比于浅拷贝不一样，浅拷贝即是两者均指向同一个空间地址
+
+以下是map映射的解决方案：
+
+```
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head == null) return null;
+        Node cur = head;
+        Map<Node, Node> map = new HashMap<>();
+        // 3. 复制各节点，并建立 “原节点 -> 新节点” 的 Map 映射
+        while(cur != null) {
+            map.put(cur, new Node(cur.val));
+            cur = cur.next;
+        }
+        cur = head;
+        // 4. 构建新链表的 next 和 random 指向
+        while(cur != null) {
+            map.get(cur).next = map.get(cur.next);
+            map.get(cur).random = map.get(cur.random);
+            cur = cur.next;
+        }
+        // 5. 返回新链表的头节点
+        return map.get(head);
+    }
+}
+```
+
+## 排序链表
+
+![](assets/排序链表1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+/**
+ * 排序链表
+ */
+public class hot35 {
+    class ListNode {
+        int val;
+        ListNode next;
+
+        ListNode() {
+        }
+
+        ListNode(int val) {
+            this.val = val;
+        }
+
+        ListNode(int val, ListNode next) {
+            this.val = val;
+            this.next = next;
+        }
+    }
+
+    public ListNode sortList(ListNode head) {
+        if(head == null){
+            return null;
+        }
+        return mergeSort(head);
+    }
+
+    public ListNode mergeSort(ListNode head){
+        if(head == null || head.next == null){
+            return head;
+        }
+        ListNode mid = getMidNode(head);
+        ListNode right = mergeSort(mid.next);
+        mid.next = null;
+        ListNode left = mergeSort(head);
+        return merge(left, right);
+    }
+
+    public ListNode getMidNode(ListNode head){
+        if(head == null){
+            return null;
+        }
+        ListNode slow = head;
+        ListNode fast = head.next;
+        while(fast != null && fast.next != null){
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+    }
+
+    public ListNode merge(ListNode left, ListNode right){
+        ListNode dummy = new ListNode(-1);
+        ListNode cur = dummy;
+        while(left != null && right != null){
+            if(left.val < right.val){
+                cur.next = left;
+                left = left.next;
+            }else{
+                cur.next = right;
+                right = right.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = left != null ? left : right;
+        return dummy.next;
+    }
+}
+```
+
+对于链表的排序比较适用归并排序，但此时这个的空间复杂为O(logn)
+
+归并排序的主要点找到中间节点的位置，然后断开，左边排序，右边排序，最后去合并两个已经排序好的链表即可
+
+以下是空间O(1)的解题，自底向上进行归并
+
+```
+class Solution {
+    public ListNode sortList(ListNode head) {
+        int length = getListLength(head); // 获取链表长度
+        ListNode dummy = new ListNode(0, head); // 用哨兵节点简化代码逻辑
+        // step 为步长，即参与合并的链表长度
+        for (int step = 1; step < length; step *= 2) {
+            ListNode newListTail = dummy; // 新链表的末尾
+            ListNode cur = dummy.next; // 每轮循环的起始节点
+            while (cur != null) {
+                // 从 cur 开始，分割出两段长为 step 的链表，头节点分别为 head1 和 head2
+                ListNode head1 = cur;
+                ListNode head2 = splitList(head1, step);
+                cur = splitList(head2, step); // 下一轮循环的起始节点
+                // 合并两段长为 step 的链表
+                ListNode[] merged = mergeTwoLists(head1, head2);
+                // 合并后的头节点 merged[0]，插到 newListTail 的后面
+                newListTail.next = merged[0];
+                newListTail = merged[1]; // merged[1] 现在是新链表的末尾
+            }
+        }
+        return dummy.next;
+    }
+
+    // 获取链表长度
+    private int getListLength(ListNode head) {
+        int length = 0;
+        while (head != null) {
+            length++;
+            head = head.next;
+        }
+        return length;
+    }
+
+    // 分割链表
+    // 如果链表长度 <= size，不做任何操作，返回空节点
+    // 如果链表长度 > size，把链表的前 size 个节点分割出来（断开连接），并返回剩余链表的头节点
+    private ListNode splitList(ListNode head, int size) {
+        // 先找到 nextHead 的前一个节点
+        ListNode cur = head;
+        for (int i = 0; i < size - 1 && cur != null; i++) {
+            cur = cur.next;
+        }
+
+        // 如果链表长度 <= size
+        if (cur == null || cur.next == null) {
+            return null; // 不做任何操作，返回空节点
+        }
+
+        ListNode nextHead = cur.next;
+        cur.next = null; // 断开 nextHead 的前一个节点和 nextHead 的连接
+        return nextHead;
+    }
+
+    // 21. 合并两个有序链表（双指针）
+    // 返回合并后的链表的头节点和尾节点
+    private ListNode[] mergeTwoLists(ListNode list1, ListNode list2) {
+        ListNode dummy = new ListNode(); // 用哨兵节点简化代码逻辑
+        ListNode cur = dummy; // cur 指向新链表的末尾
+        while (list1 != null && list2 != null) {
+            if (list1.val < list2.val) {
+                cur.next = list1; // 把 list1 加到新链表中
+                list1 = list1.next;
+            } else { // 注：相等的情况加哪个节点都是可以的
+                cur.next = list2; // 把 list2 加到新链表中
+                list2 = list2.next;
+            }
+            cur = cur.next;
+        }
+        cur.next = list1 != null ? list1 : list2; // 拼接剩余链表
+        while (cur.next != null) {
+            cur = cur.next;
+        }
+        // 循环结束后，cur 是合并后的链表的尾节点
+        return new ListNode[]{dummy.next, cur};
+    }
+}
+```
+
+![](assets/排序链表2.png)
+
+## LRU缓存
+
+![](assets/LRU缓存1.png)
+
+解法一：
+
+使用封装好的类LinkedHashMap，其内置了LRU，LinkedHashMap是继承于HashMap的，但是它比HashMap多一个功能，即是有序的，建立了一个双向链表维护整个链表的顺序
+
+![](assets/LRU缓存2.png)
+
+```
+class LRUCache {
+    private final int capacity;
+    private final Map<Integer, Integer> cache = new LinkedHashMap<>();
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public int get(int key) {
+        //删除key,并且判断是否在cache中
+        Integer value = cache.remove(key);
+        if(value != null){
+            cache.put(key, value);
+            return value;
+        }
+        return -1;
+    }
+
+    public void put(int key, int value) {
+        Integer oldValue = cache.remove(key);
+        if(oldValue != null){
+            cache.put(key, value);
+            return;
+        }
+        //key不在cache中，插入cache中，插入前先判断是否超出容量
+        if(cache.size() == capacity){
+            Integer eldestKey = cache.keySet().iterator().next();
+            cache.remove(eldestKey);//删除最老的缓存
+        }
+        cache.put(key, value);
+    }
+}
+```
+
+解法二：手写双向链表
+
+![](assets/LRU缓存3.png)
+
+```
+class LRUCache {
+
+    private static class Node {
+        int key;
+        int value;
+        Node prev;
+        Node next;
+
+        public Node(int key, int value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
+    private final int capacity;
+    private final Node dumpy = new Node(0, 0); //哨兵节点
+    private final Map<Integer, Node> keyNode = new HashMap<>();
+
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        dumpy.prev = dumpy;
+        dumpy.next = dumpy;
+    }
+
+    public int get(int key) {
+        Node node = getNode(key);//把对应节点移至链表头部
+        return node == null ? -1 : node.value;
+    }
+
+    public void put(int key, int value) {
+       Node node = getNode(key);
+       //如果节点存在,更新值
+       if(node != null){
+           node.value = value;
+           return;
+       }
+       node = new Node(key, value);
+       keyNode.put(key, node);
+       pushFront(node);
+       if(keyNode.size() > capacity){
+           Node last = dumpy.prev;
+           keyNode.remove(last.key);
+           removeNode(last);
+       }
+    }
+
+    private Node getNode(int key){
+        if(!keyNode.containsKey(key)){
+            return null;
+        }
+        Node node = keyNode.get(key);
+        removeNode(node);
+        pushFront(node);
+        return node;
+    }
+
+    private void removeNode(Node node){
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+
+    private void pushFront(Node node){
+        node.prev = dumpy;
+        node.next = dumpy.next;
+        dumpy.next.prev = node;
+        dumpy.next = node;
+    }
+}
+```
+
+## 二叉树的中序遍历
+
+![](assets/二叉树的中序遍历1.png)
+
+二叉树的中序遍历：
+
+左子树->根节点->右子树（左中右的形式）
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+/**
+ * 二叉树的中序遍历
+ */
+public class hot37 {
+    class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode() {
+        }
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+
+        TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        //使用双端队列模拟栈
+        //栈的特性先进后出，迭代进行更替
+        Deque<TreeNode> stack = new ArrayDeque<>();
+        while (root != null || !stack.isEmpty()) {
+            //迭代访问左子树
+            while(root != null){
+                stack.push(root);
+                root = root.left;
+            }
+            //迭代完左子树之后，弹栈出来访问右子树，迭代访问右子树
+            //栈是先进后出，所以此时弹的是最后一个进栈元素即左子树的最后一个节点
+            root = stack.pop();
+            res.add(root.val);
+            root = root.right;
+        }
+        return res;
+    }
+}
+```
+
+迭代遍历
+
+有一种优化算法，空间直接降为O(1)，Morris中序遍历
+
+![](assets/二叉树中序遍历2.png)
+
+![](assets/二叉树的中序遍历3.png)
+
+```
+public List<Integer> inorderTraversal(TreeNode root) {
+    List<Integer> res = new ArrayList<>();
+    TreeNode pre = null;
+    while(root != null){
+        if(root.left != null){
+            pre = root.left;
+            while(pre.right != null && pre.right != root){
+                pre = pre.right;
+            }
+            if(pre.right == null){
+                pre.right = root;
+                root = root.left;
+            }else{
+                pre.right = null;
+                res.add(root.val);
+                root = root.right;
+            }
+        }else{
+            res.add(root.val);
+            root = root.right;
+        }
+    }
+    return res;
+}
+```
+
+## 二叉树的最大深度
+
+![](assets/二叉树的最大深度1.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+
+/**
+ * 二叉树的最大深度
+ */
+public class hot38 {
+    class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode() {
+        }
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+
+        TreeNode(int val, TreeNode left, TreeNode right) {
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    public int maxDepth(TreeNode root) {
+        if(root == null){
+            return 0;
+        }
+        int left = maxDepth(root.left);
+        int right = maxDepth(root.right);
+        return Math.max(left, right) + 1;
+    }
+}
+```
+
+使用递归深度优先，获取到左子树和右子树的最大深度，代用公式
+
+max(l.r) + 1即可
+
+广度优先如下：
+
+```
+public int maxDepth(TreeNode root) {
+    if (root == null) {
+        return 0;
+    }
+    Queue<TreeNode> queue = new LinkedList<TreeNode>();
+    queue.offer(root);
+    int ans = 0;
+    while (!queue.isEmpty()) {
+        int size = queue.size();
+        while (size > 0) {
+            TreeNode node = queue.poll();
+            if (node.left != null) {
+                queue.offer(node.left);
+            }
+            if (node.right != null) {
+                queue.offer(node.right);
+            }
+            size--;
+        }
+        ans++;
+    }
+    return ans;
+}
+```
+
+## 翻转二叉树
+
+![](assets/翻转二叉树1.png)
+
+```
+public TreeNode invertTree(TreeNode root) {
+    if(root == null){
+        return null;
+    }
+    TreeNode left = invertTree(root.left);
+    TreeNode right = invertTree(root.right);
+    root.left = right;
+    root.right = left;
+    return root;
+}
+```
+
+直接递归秒过
+
+可以使用模拟栈进行翻转
+
+```
+public TreeNode invertTree(TreeNode root) {
+    if(root == null){
+        return null;
+    }
+    Stack<TreeNode> stack = new Stack<>();
+    stack.push(root);
+    while(!stack.isEmpty()){
+        TreeNode node = stack.pop();
+        if(node.left != null){
+            stack.push(node.left);
+        }
+        if(node.right != null){
+            stack.push(node.right);
+        }
+        TreeNode temp = node.left;
+        node.left = node.right;
+        node.right = temp;
+    }
+    return root;
+}
+```
+
+
+

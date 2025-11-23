@@ -188,5 +188,87 @@ publisher配置中的return主要是返回路由失败消息
 
 RabbitMQ中存在一种重连机制，当网络抖动时，我们可以进行重连，避免网络抖动导致发送消息失败，除此RabbitMQ还有一个生产者确认机制，当消息发送失败会有一个ack回执，发送失败则是nack回执，这样就保证了生产者的可靠性，但此时会有额外的资源开销，一般情况下是不需要确认回执的
 
+## MQ的可靠性
+
+![](assets/RabbitMQ20.png)
+
+**数据持久化：**
+
+1.交换机持久化   2.队列持久化   3.消息持久化
+
+**Lazy Queue：**
+
+![](assets/RabbitMQ21.png)
+
+![](assets/RabbitMQ22.png)
+
+![](assets/RabbitMQ23.png)
+
+配置非持久化消息会直接写入内存，满了再同步到磁盘
+
+消息持久化会直接存入磁盘再同步到内存
+
+配置消息非持久化与持久化再配置LazyQueue会直接存入磁盘
+
+![](assets/RabbitMQ24.png)
+
+## 消费者可靠性
+
+**消费者确认机制：**
+
+![](assets/RabbitMQ25.png)
+
+**SpringAMQP实现的确认机制：**
+
+![](assets/RabbitMQ26.png)
+
+![](assets/RabbitMQ27.png)
+
+**消费者失败重试机制：**
+
+![](assets/RabbitMQ28.png)
+
+![](assets/RabbitMQ29.png)
+
+**RepublishMessageRecoverer处理失败消息：**
+
+![](assets/RabbitMQ30.png)
+
+![](assets/RabbitMQ31.png)
+
+![](assets/RabbitMQ32.png)
+
+**业务幂等性：**
+
+![](assets/RabbitMQ33.png)
+
+1.全局唯一ID
+
+2.数据库事务＋乐观锁
+
+3.分布式锁
+
+## 延迟消息
+
+生产者发送消息时指定一个时间，消费者不会立刻收到消息，而是在指定时间之后才收到消息
+
+**死信交换机：**
+
+![](assets/RabbitMQ34.png)
+
+如果队列通过dead-letter-exchange属性指定了一个交换机，那么该队列中的死信机会投递到这个交换机中。这个交换机就为死信交换机
+
+可以模拟延迟消息
+
+![](assets/RabbitMQ35.png)
+
+**延迟消息插件的使用：**
+
+![](assets/RabbitMQ36.png)
+
+![](assets/RabbitMQ37.png)
+
+
+
 
 
