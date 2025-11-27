@@ -3655,5 +3655,171 @@ public TreeNode invertTree(TreeNode root) {
 }
 ```
 
+## 对称二叉树
 
+![](assets/对称二叉树1.png)
+
+```
+public boolean isSymmetric(TreeNode root) {
+    TreeNode left = root.left;
+    TreeNode right = root.right;
+    return isMirror(left, right);
+}
+
+public boolean isMirror(TreeNode left, TreeNode right) {
+    if(left == null && right == null){
+        return true;
+    }
+    if(left == null || right == null){
+        return false;
+    }
+    return left.val == right.val && isMirror(left.left, right.right) && isMirror(left.right, right.left);
+}
+```
+
+递归分析
+
+还有一种就是迭代，也是用模拟方法，像翻转二叉树一样，不过是使用队列
+
+## 二叉树的直径
+
+![](assets/二叉树的直径1.png)
+
+```
+private int res = 0;
+    public int diameterOfBinaryTree(TreeNode root) {
+       getDepth(root);
+       return res;
+    }
+
+    private int getDepth(TreeNode root) {
+        if(root == null){
+            return -1;
+        }
+        int leftLen = getDepth(root.left) + 1;
+        int rightLen = getDepth(root.right) + 1;
+        res = Math.max(res, leftLen + rightLen);
+        return Math.max(leftLen, rightLen);
+    }
+```
+
+## 二叉树的层序遍历
+
+![](assets/二叉树的层序遍历1.png)
+
+```
+public List<List<Integer>> levelOrder(TreeNode root) {
+    if(root == null){
+        return new ArrayList<>();
+    }
+    List<List<Integer>> res = new ArrayList<>();
+    List<TreeNode> cur = new ArrayList<>();
+    cur.add(root);
+    while(!cur.isEmpty()){
+        List<Integer> val = new ArrayList<>();
+        List<TreeNode> next = new ArrayList<>();
+        for(TreeNode node : cur){
+            val.add(node.val);
+            if(node.left != null){
+                next.add(node.left);
+            }
+            if(node.right != null){
+                next.add(node.right);
+            }
+        }
+        res.add(val);
+        cur = next;
+    }
+    return res;
+}
+```
+
+使用两个集合进行存储，一个存储当前的值，一个存储节点，bfs进行遍历，
+
+广泛搜索，先存储当前的根节点，通过根节点去遍历下一个节点，左节点或者右节点去拿值
+
+以下是使用双端队列进行的搜索
+
+```
+public List<List<Integer>> levelOrder(TreeNode root) {
+    if(root == null){
+        return new ArrayList<>();
+    }
+    List<List<Integer>> res = new ArrayList<>();
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.offer(root);
+    while(!queue.isEmpty()){
+        List<Integer> val = new ArrayList<>(queue.size());
+        for(int i = queue.size(); i > 0; i--){
+            TreeNode node = queue.poll();
+            val.add(node.val);
+            if(node.left != null){
+                queue.offer(node.left);
+            }
+            if(node.right != null){
+                queue.offer(node.right);
+            }
+        }
+        res.add(val);
+    }
+    return res;
+}
+```
+
+## 将有序数组转换为二叉搜索树
+
+![](assets/将有序数组转换为二叉搜索树1.png)
+
+平衡二叉树：树所有节点的左右子树的高度相差不超过1
+
+二叉搜索树：根节点的左子树均是小于根节点的数，左子树的节点也是如此
+
+右子树亦是如此，即两个子树也应当是二叉搜索树
+
+双指针查找有序数组的中间数据作为根节点，随后递归构建左右子树即可
+
+对于树的构建、遍历、搜索一般使用递归
+
+```
+public TreeNode sortedArrayToBST(int[] nums) {
+    return buildTree(nums, 0, nums.length - 1);
+}
+
+public TreeNode buildTree(int[] nums, int left, int right) {
+    if (left > right) {
+        return null;
+    }
+    int mid = left + (right - left) / 2;
+    TreeNode root = new TreeNode(nums[mid]);
+    root.left = buildTree(nums, left, mid - 1);
+    root.right = buildTree(nums, mid + 1, right);
+    return root;
+}
+```
+
+## 验证二叉搜索树
+
+![](assets/验证二叉搜索树1.png)
+
+中序遍历二叉树
+
+```
+public boolean isValidBST(TreeNode root) {
+    Deque<TreeNode> stack = new LinkedList<>();
+    long temp = Long.MIN_VALUE;
+    while(root != null || !stack.isEmpty()){
+        while(root != null){
+            stack.push(root);
+            root = root.left;
+        }
+        root = stack.pop();
+        if(root.val <= temp){
+            return false;
+        }
+        temp = root.val;
+        root = root.right;
+    }
+    return true;
+}
+```
 
