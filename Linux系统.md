@@ -34,5 +34,53 @@ Redhat中的为centos    Debian中的为Ubuntu
 
 ![](assets/Linux2.png)
 
+**命令格式：**
 
+![](assets/Linux3.png)
+
+查阅命令的帮助信息
+
+command --help
+
+查阅使用手册
+
+man command
+
+![](assets/Linux4.png)
+
+![](assets/Linux6.png)
+
+pwd：查看当前路径
+
+ls：查看当代目录下的哪些文件和文件夹
+
+mkdir：创建文件夹，后面可接一个或多个参数
+
+cd：切换目录
+
+![](assets/Linux9.png)
+
+![](assets/Linux7.png)
+
+touch：创建文件
+
+mv：创建或移动文件
+
+![](assets/Linux8.png)
+
+![](assets/Linux10.png)
+
+**相对路径和绝对路径：**
+
+相对路径：路径信息以'.'或'..'开头的均为相对路径
+
+绝对路径：路径信息以'/'或'~'开头的均为绝对路径
+
+cp：复制文件
+
+![](assets/Linux11.png)
+
+rm：删除文件或目录
+
+![](assets/Linux12.png)
 
