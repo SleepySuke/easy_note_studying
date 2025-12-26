@@ -325,6 +325,66 @@ a,b = b,a操作为先将b,a进行组包，随后再将a,b拆包
 
 global需要放在第一行否则会报错
 
+### 函数传参的方式
+
+![](assets/1766761200836.png)
+
+![](assets/1766761363937.png)
+
+### 缺省参数（默认参数）
+
+![](assets/1766761516831.png)
+
+### 可变参数/不定长参数
+
+![](assets/1766761914822.png)
+
+print函数中有个默认的end='\n'换行符，sep=‘’多个位置参数之间的间隔，file=None
+
+函数拆包
+
+列表中的数据对应*args，此时如果要将列表中的数据传入，可以使用 *my_list进行拆包
+
+**kwargs也是如此操作
+
+```
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+'''
+@Author ：自然醒
+@Version ：1.0
+'''
+#my_list[1,2,3,4] my_dict = {'a':1,'b':2,'c':3,'d':4}
+#将字典和列表中的数据使用my_sum函数求和
+def my_sum(*args, **kwargs):
+    sum = 0
+    for i in args:
+        sum += i
+    for j in kwargs.values():
+        sum += j
+
+    print(sum)
+
+
+my_sum(1, 2, 3, 4)
+my_sum(a=1, b=2, c=3, d=4)
+
+my_list = [1, 2, 3, 4]
+my_sum(*my_list)
+my_dict = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
+my_sum(**my_dict)
+```
+
+### 匿名函数
+
+![](assets/1766763062938.png)
+
+匿名函数一般不需要主动调用，一般作为函数的参数使用
+
+![](assets/1766764650137.png)
+
+有点像Java中的foreach函数
+
 
 
 
