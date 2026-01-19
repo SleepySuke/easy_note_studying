@@ -3513,7 +3513,7 @@ public List<Integer> inorderTraversal(TreeNode root) {
         if(root.left != null){
             pre = root.left;
             while(pre.right != null && pre.right != root){
-                pre = pre.right;
+                pre = pre.right; //寻找最右边的节点
             }
             if(pre.right == null){
                 pre.right = root;
@@ -3581,7 +3581,7 @@ public class hot38 {
 
 使用递归深度优先，获取到左子树和右子树的最大深度，代用公式
 
-max(l.r) + 1即可
+max(l.r) + 1即可 关于二叉树的深度求解可以分为其子树的求解，左右子树，再回归到整棵树的求解
 
 广度优先如下：
 
@@ -3822,4 +3822,525 @@ public boolean isValidBST(TreeNode root) {
     return true;
 }
 ```
+
+## 二叉搜索树中第k小的元素
+
+![](assets/1766914506484.png)
+
+```
+public int kthSmallest(TreeNode root, int k) {
+    Deque<TreeNode> stack = new LinkedList<>();
+    while(root != null || !stack.isEmpty()){
+        while(root != null){
+            stack.push(root);
+            root = root.left;
+        }
+        root = stack.pop();
+        k--;
+        if(k == 0){
+            break;
+        }
+        root = root.right;
+    }
+    return root.val;
+}
+```
+
+## 二叉树的右视图
+
+![](assets/1766915326394.png)
+
+```
+public List<Integer> rightSideView(TreeNode root) {
+    List<Integer> res = new LinkedList<>();
+    if(root == null){
+        return res;
+    }
+    dfs(root,1, res);
+    return res;
+}
+
+public void dfs(TreeNode root, int level, List<Integer> res){
+    if(root == null){
+        return;
+    }
+    if(res.size() < level){
+        res.add(root.val);
+    }
+    dfs(root.right, level + 1, res);
+    dfs(root.left, level + 1, res);
+}
+```
+
+## 二叉树展开为链表
+
+![](assets/1766969630486.png)
+
+注意这里需要的是先序遍历：中 ->左 ->右
+
+```
+public void flatten(TreeNode root) {
+    if(root == null){
+        return;
+    }
+    //中序遍历，获取当前结点 中->左->右
+    TreeNode cur = root;
+    while(cur != null){
+        //获取当前结点的左子树
+        TreeNode pre = cur.left;
+        //查询当前左子树结点的右子树以及其他子树
+        if(pre != null){
+            //获取当前左子树结点的右子树
+            while(pre.right != null){
+                pre = pre.right;
+            }
+            //将当前结点的右子树挂载到当前左子树结点的右子树上
+            pre.right = cur.right;
+            //将当前左子树结点的左子树挂载到当前结点的右子树上
+            cur.right = cur.left;
+            //将当前结点的左子树置空
+            cur.left = null;
+        }
+        //获取当前结点的右子树
+        cur = cur.right;
+    }
+}
+```
+
+这里还要注意的是左指针始终为空，转为链表之后，所以会有cur.left = null
+
+正常的输出应该会是1,2,3,4,5,6，因为左指针为空所以有了1,null,2,null如此的输出
+
+## 从前序与中序遍历序列构造二叉树
+
+![](assets/1766984298782.png)
+
+先序遍历：中->左->右
+
+中序遍历：左->中->右
+
+```
+public TreeNode buildTree(int[] preorder, int[] inorder) {
+    if(preorder.length == 0 || inorder.length == 0){
+        return null;
+    }
+    TreeNode root = new TreeNode(preorder[0]);
+    for(int i = 0; i < inorder.length; i++){
+        if(inorder[i] == preorder[0]){
+            root.left = buildTree(Arrays.copyOfRange(preorder, 1, i + 1), Arrays.copyOfRange(inorder, 0, i));
+            root.right = buildTree(Arrays.copyOfRange(preorder, i + 1, preorder.length), Arrays.copyOfRange(inorder, i + 1, inorder.length));
+            break;
+        }
+    }
+    return root;
+}
+```
+
+```
+public TreeNode buildTree(int[] preorder, int[] inorder) {
+    int n = preorder.length;
+    Map<Integer,Integer> index = new HashMap<>(n,1);
+    for(int i = 0; i < n; i++){
+        index.put(inorder[i], i);
+    }
+    return dfs(preorder, 0, n, 0, n, index);
+}
+private TreeNode dfs(int[] preorder, int preL, int preR, int inL, int inR, Map<Integer,Integer> index){
+    if(preL == preR){
+        return null;
+    }
+    int leftSize = index.get(preorder[preL]) - inL;
+    TreeNode left = dfs(preorder, preL + 1, preL + leftSize + 1,  inL, inL + leftSize, index);
+    TreeNode right = dfs(preorder, preL + 1 + leftSize, preR,  inL + 1 + leftSize, inR, index);
+    return new TreeNode(preorder[preL], left, right);
+}
+```
+
+## 路径总和 III
+
+![](assets/1767102403596.png)
+
+```
+    public int pathSum(TreeNode root, int targetSum) {
+        if (root == null) {
+            return 0;
+        }
+        Map<Long, Integer> map = new HashMap<>();
+        map.put(0L, 1);
+        return dfs(root, targetSum, map, 0);
+    }
+
+    private int dfs(TreeNode root, int targetSum, Map<Long, Integer> map, long sum) {
+        if (root == null) {
+            return 0;
+        }
+        //使用前缀和解法 求出当前节点到根节点的路径和
+        //先计算当前节点的值
+        sum += root.val;
+        //然后通过检索当前路径中是否存在的和为targetSum的路径
+        //检索当前节点的路径中是否存在另一个节点值满足其和为targetSum
+        int res = map.getOrDefault(sum - targetSum, 0);
+        //将当前节点的和加入map中 +1为了统计当前节点到根节点的路径中满足和为targetSum的个数
+        map.put(sum, map.getOrDefault(sum, 0) + 1);
+        //递归左右子树
+        res += dfs(root.left, targetSum, map, sum);
+        res += dfs(root.right, targetSum, map, sum);
+        //返回结果
+        map.put(sum, map.getOrDefault(sum, 0) - 1);
+        return res;
+    }
+```
+
+## 二叉树的最近公共祖先
+
+![](assets/1767279070386.png)
+
+```
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if(root == null){
+            return null;
+        }
+        if(root == p || root == q){
+            return root;
+        }
+        TreeNode left = lowestCommonAncestor(root.left, p, q);
+        TreeNode right = lowestCommonAncestor(root.right, p, q);
+        if(left != null && right != null){
+            return root;
+        }
+        return left != null ? left : right;
+    }
+```
+
+## 二叉树中的最大路径和
+
+![](assets/1767283857353.png)
+
+```
+int max = Integer.MIN_VALUE;
+public int maxPathSum(TreeNode root) {
+    dfs(root);
+    return max;
+}
+
+private int dfs(TreeNode root){
+    if(root == null){
+        return 0;
+    }
+    int leftLen = Math.max(dfs(root.left), 0);
+    int rightLen = Math.max(dfs(root.right), 0);
+    max = Math.max(max, leftLen + rightLen + root.val);
+    return Math.max(leftLen, rightLen) + root.val;
+
+}
+```
+
+注意：如果直接返回dfs的结果会少去一个当前节点值
+
+通用解法：二叉树有关的dp数组，皆可以将其拆分，从整棵树拆分为左右子树的子问题进行递归求解即可
+
+## 岛屿数量
+
+![](assets/1767495972156.png)
+
+针对于示例1的岛屿为
+
+![](assets/1767502147701.png)
+
+岛屿不管如何排布，只要周围全是水即为岛屿，示例2中的单独'1'即可为单独的岛屿，此时四周都是水
+
+```
+private int[][] dirs = new int[][]{{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+private int m, n;
+private boolean[][] visited;
+public int numIslands(char[][] grid) {
+    m = grid.length;
+    n = grid[0].length;
+    visited = new boolean[m][n];
+    int res = 0;
+    for(int i = 0; i < m; i++){
+        for(int j = 0; j < n; j++){
+            if(grid[i][j] == '1' && !visited[i][j]){
+                dfs(grid, i, j);
+                res++;
+            }
+        }
+    }
+    return res;
+}
+
+private void dfs(char[][] grid, int i, int j){
+    if(i < 0 || i >= m || j < 0 || j >= n || grid[i][j] == '0' || visited[i][j]){
+        return;
+    }
+    visited[i][j] = true;
+    for (int[] dir : dirs) {
+        int newI = i + dir[0];
+        int newJ = j + dir[1];
+        dfs(grid, newI, newJ);
+    }
+}
+```
+
+## 腐烂的橘子
+
+![](assets/1768742150413.png)
+
+```
+private int[][] dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+public int orangesRotting(int[][] grid) {
+    int m = grid.length;
+    int n = grid[0].length;
+    int fresh = 0;
+    List<int[]> queue = new ArrayList<>();
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            // 统计新鲜橘子数量
+            if (grid[i][j] == 1) {
+                fresh++;
+            }
+            // 腐烂橘子入队
+            if (grid[i][j] == 2) {
+                queue.add(new int[]{i, j});
+            }
+        }
+    }
+    int res = 0;
+    //此时不判断fresh是否大于0的话，循环会多一次，造成res多1
+    while (fresh > 0 && !queue.isEmpty()) {
+        res++;
+        List<int[]> temp = queue;
+        queue = new ArrayList<>();
+        for (int[] point : temp) {
+            for (int[] dir : dirs) {
+                int x = point[0] + dir[0];
+                int y = point[1] + dir[1];
+                if (x >= 0 && x < m && y >= 0 && y < n && grid[x][y] == 1) {
+                    fresh--;
+                    grid[x][y] = 2;
+                    queue.add(new int[]{x, y});
+                }
+            }
+        }
+    }
+    return fresh > 0 ? -1 : res;
+
+}
+```
+
+主要是模仿队列的取值，并且每次的腐烂橘子位置是用数组来代替，比如初始化时的腐烂橘子(0,0)表示，最后根据fresh去访问层级遍历，一层一层去遍历
+
+![](assets/1768830337412.png)
+
+另一种直接使用队列如下
+
+````
+class Solution {
+    public int orangesRotting(int[][] grid) {
+
+
+    // 边界 长宽
+    int M = grid.length;
+    int N = grid[0].length;
+    Queue<int[]> queue = new LinkedList<>();
+
+    // count 表示新鲜橘子的数量
+    int count = 0; 
+
+    // 遍历二维数组 找出所有的新鲜橘子和腐烂的橘子
+    for (int r = 0; r < M; r++) {
+        for (int c = 0; c < N; c++) {
+            // 新鲜橘子计数
+            if (grid[r][c] == 1) {
+                count++;
+                // 腐烂的橘子就放进队列
+            } else if (grid[r][c] == 2) {
+                // 缓存腐烂橘子的坐标
+                queue.add(new int[]{r, c});
+            }
+        }
+    }
+
+    // round 表示腐烂的轮数，或者分钟数
+    int round = 0; 
+
+    // 如果有新鲜橘子 并且 队列不为空
+    // 直到上下左右都触及边界 或者 被感染的橘子已经遍历完
+    while (count > 0 && !queue.isEmpty()) {
+
+        // BFS 层级 + 1
+        round++;
+
+        // 拿到当前层级的腐烂橘子数量， 因为每个层级会更新队列
+        int n = queue.size();
+
+        // 遍历当前层级的队列
+        for (int i = 0; i < n; i++) {
+
+            // 踢出队列（拿出一个腐烂的橘子）
+            int[] orange = queue.poll();
+
+            // 恢复橘子坐标
+            int r = orange[0];
+            int c = orange[1];
+
+            // ↑ 上邻点 判断是否边界 并且 上方是否是健康的橘子
+            if (r-1 >= 0 && grid[r-1][c] == 1) {
+                // 感染它 
+                grid[r-1][c] = 2;
+                // 好橘子 -1 
+                count--;
+                // 把被感染的橘子放进队列 并缓存
+                queue.add(new int[]{r-1, c});
+            }
+            // ↓ 下邻点 同上
+            if (r+1 < M && grid[r+1][c] == 1) {
+                grid[r+1][c] = 2;
+                count--;
+                queue.add(new int[]{r+1, c});
+            }
+            // ← 左邻点 同上
+            if (c-1 >= 0 && grid[r][c-1] == 1) {
+                grid[r][c-1] = 2;
+                count--;
+                queue.add(new int[]{r, c-1});
+            }
+            // → 右邻点 同上
+            if (c+1 < N && grid[r][c+1] == 1) {
+                grid[r][c+1] = 2;
+                count--;
+                queue.add(new int[]{r, c+1});
+            }
+        }
+    }
+
+    // 如果此时还有健康的橘子
+    // 返回 -1
+    // 否则 返回层级
+    if (count > 0) {
+        return -1;
+    } else {
+        return round;
+    }
+    }
+}
+````
+
+## 课程表
+
+![](assets/1768830497989.png)
+
+```
+public boolean canFinish(int numCourses, int[][] prerequisites) {
+    //用于记录是否被访问 0 未访问 1 正在访问 2 访问完成
+    int[] state = new int[numCourses];
+    //将数据创建为邻接表
+    List<Integer>[] graph = new ArrayList[numCourses];
+    for(int i = 0; i < numCourses; i++){
+        graph[i] = new ArrayList<>();
+    }
+    //每次都是由b1指向a1构成一个有方向的图
+    for(int[] pre : prerequisites){
+        graph[pre[1]].add(pre[0]);
+    }
+    for(int i = 0; i < numCourses; i++){
+        if(state[i] == 0 && dfs(graph, i, state)){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+private boolean dfs(List<Integer>[] graph, int i, int[] state){
+    //当前的图端点正在访问
+    state[i] = 1;
+    for(int next : graph[i]){
+        //如果当前图端点正在访问 或者 当前图端点没有被访问过
+        //则进行递归
+        //state[next] == 1说明找到了环
+        //state[next] == 0说明当前图端点没有被访问过 需要继续递归
+        //state[next] == 2说明当前图端点访问完成 没有找到环
+        if(state[next] == 1 || state[next] == 0 && dfs(graph, next, state)){
+            return true;
+        }
+    }
+    //当前的图端点访问完成 此时并没有找到环
+    state[i] = 2;
+    return false;
+}
+```
+
+此题的主要思路是拓扑排序，如果当前的课程存在环的话则无法完成课程，如果不存在环的话则可以完成课程，即将整个序列进行拓扑排序即可
+
+![](assets/1768838720967.png)
+
+![](assets/1768838292943.png)
+
+![](assets/1768838328640.png)
+
+![](assets/1768838450091.png)
+
+````
+class Solution {
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        // 1. 入度数组
+        int[] inDegree = new int[numCourses];
+        
+        // 2. 链式前向星（数组模拟邻接表）
+        // head[i] 存储以 i 为起点的第一条边的索引
+        int[] head = new int[numCourses];
+        // next[j] 存储与第 j 条边同起点的下一条边的索引
+        int[] next = new int[prerequisites.length];
+        // to[j] 存储第 j 条边的终点
+        int[] to = new int[prerequisites.length];
+        
+        // 初始化 head 数组为 -1
+        for (int i = 0; i < numCourses; i++) head[i] = -1;
+
+        // 3. 构造图并统计入度
+        for (int i = 0; i < prerequisites.length; i++) {
+            int cur = prerequisites[i][0];
+            int pre = prerequisites[i][1];
+            inDegree[cur]++;
+            
+            // 添加边：pre -> cur
+            to[i] = cur;
+            next[i] = head[pre];
+            head[pre] = i;
+        }
+
+        // 4. 数组模拟队列
+        int[] queue = new int[numCourses];
+        int l = 0, r = 0; // 左右指针
+        
+        // 将入度为 0 的入队
+        for (int i = 0; i < numCourses; i++) {
+            if (inDegree[i] == 0) {
+                queue[r++] = i;
+            }
+        }
+
+        // 5. 拓扑排序
+        int count = 0;
+        while (l < r) {
+            int pre = queue[l++]; // 出队
+            count++;
+            
+            // 遍历以 pre 为起点的所有边
+            for (int i = head[pre]; i != -1; i = next[i]) {
+                int target = to[i];
+                if (--inDegree[target] == 0) {
+                    queue[r++] = target;
+                }
+            }
+        }
+
+        return count == numCourses;
+    }
+}
+````
+
+
 

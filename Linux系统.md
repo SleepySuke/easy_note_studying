@@ -188,5 +188,96 @@ whoami当前用户是谁
 
 ![](assets/1765636476125.png)
 
+对于磁盘的管理扩展
 
+````
+sudo fdisk -l 查看磁盘分区情况
+lsblk 更清晰的查看 此命令会将磁盘情况以树形展开
+sda 是物理磁盘 sda1、sda2是分区
+根据出现的信息进行处理 一般为lvm 输出中带有vg、lv
+# 查看物理卷、卷组、逻辑卷
+sudo pvdisplay
+sudo vgdisplay
+sudo lvdisplay
+# 扩展物理卷到新空间
+sudo pvresize /dev/sdaX  # X 是你的物理分区号
+````
+
+以下是我的磁盘信息
+
+![](assets/1768787777071.png)
+
+现在要扩展sda2的分区
+
+![](assets/1768787855759.png)
+
+扩展完之后进行重新加载分区
+
+````
+sudo partprobe /dev/sda
+````
+
+扩展物理卷
+
+````
+# 扩展 /dev/sda2 上的物理卷
+sudo pvresize /dev/sda2
+
+# 验证物理卷扩展
+sudo pvdisplay
+````
+
+![](assets/1768788042977.png)
+
+可以查看当前卷组中的可用空间
+
+```
+sudo vgdisplay centos
+```
+
+可以进行对比 未扩展与扩展之后
+
+随后是扩展根逻辑卷
+
+````
+# 将所有可用空间分配给根逻辑卷
+sudo lvextend -l +100%FREE /dev/mapper/centos-root
+
+# 或者，如果您想指定具体大小（例如：扩展到28GB）
+# sudo lvextend -L 28G /dev/mapper/centos-root
+````
+
+````
+# 查看文件系统类型
+df -T /
+
+# 如果是 XFS（CentOS 7 默认）：
+sudo xfs_growfs /dev/mapper/centos-root
+
+# 如果是 ext4（少数情况）：
+sudo resize2fs /dev/mapper/centos-root
+````
+
+![](assets/1768788302650.png)
+
+进行扩展之后 进行验证
+
+````
+# 查看卷组信息
+sudo vgdisplay centos
+
+# 查看逻辑卷信息
+sudo lvdisplay /dev/mapper/centos-root
+
+# 查看文件系统使用情况
+df -h /
+````
+
+![](assets/1768788507477.png)
+
+![](assets/1768788514611.png)
+
+这样便可以完成分配的基础操作了
+
+![](assets/1768788622410.png)
 
