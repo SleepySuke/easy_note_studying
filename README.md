@@ -31,9 +31,12 @@
 
 本仓库可直接在线浏览学习，支持在Markdown编辑器或支持Markdown的IDE中阅读。建议根据自身学习需求选择相应章节进行深入学习。
 
+##部分笔记可于飞书中查看
+https://jcngf8hu5bzo.feishu.cn/wiki/BeOmwpMCJie2ECkcbSycP2yKnBb
+
 ## 技术栈
 
-- 编程语言：Java、Python
+- 编程语言：Java、Python、Golang
 - 数据结构与算法
 - 消息队列：RabbitMQ
 - AI框架：Spring AI Alibaba
