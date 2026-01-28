@@ -281,3 +281,83 @@ df -h /
 
 ![](assets/1768788622410.png)
 
+安装vm-tools
+
+```
+sudo apt install open-vm-tools
+sudo apt install open-vm-tools-desktop
+安装完之后重启
+reboot
+```
+
+远程连接即ssh连接
+
+```
+sudo apt install openssh-server
+sudo apt install net-tools
+systemctl enable ssh
+```
+
+>Ubuntu不能直接关机，需要在服务里面通过指令或者点击关机，否则容易造成无法启动与黑屏
+
+```
+Ubuntu的root用户权限登录
+直接使用
+sudo passwd root 为其设置密码即可
+
+如果使用xftp连接看root目录下的需要如下做法 同时连接xshell时还需要以root的身份去创建连接才行
+passwd root
+
+# 2. 检查SSH服务是否运行
+systemctl status ssh
+
+# 3. 允许root通过SSH登录（如果还没允许）
+nano /etc/ssh/sshd_config
+# 找到并修改：
+# PermitRootLogin yes
+# PasswordAuthentication yes
+
+# 4. 重启SSH服务
+systemctl restart ssh
+
+#配置环境变量
+nano ~/.bashrc
+配置java
+export JAVA_HOME=/home/suke/server/jdk
+export PATH=$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
+export JRE_HOME=$JAVA_HOME/jre
+export CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib
+
+```
+
+Centos配置镜像源
+
+```
+# 1. 备份原来的源
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+
+# 2. 下载阿里云镜像源
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+
+# 3. 清理缓存并重建
+yum clean all
+yum makecache
+
+# 4. 测试
+yum update -y
+
+随后去配置ssh
+yum install -y openssh-server openssh-clients
+# 2. 启动SSH服务
+systemctl start sshd
+
+# 3. 设置开机自启
+systemctl enable sshd
+
+# 4. 检查状态
+systemctl status sshd
+
+赋值sudo权限
+usermod -aG wheel suke
+```
+

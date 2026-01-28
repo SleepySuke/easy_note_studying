@@ -4342,5 +4342,678 @@ class Solution {
 }
 ````
 
+## 实现Trie(前缀树)
 
+![](assets/1768873769562.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+
+
+/**
+ * 实现前缀树
+ * 前缀树一种树形数据结构，用于高效地存储和检索字符串数据集中的键。可以用作自动补全和拼写检查
+ * 请实现Trie类：
+ * Trie() 初始化前缀树对象。
+ * void insert(String word) 向前缀树中插入字符串word。
+ * boolean search(String word) 如果字符串word在前缀树中，返回true（即，在检索之前已经插入）；否则，返回false。
+ * boolean startsWith(String prefix) 如果之前已经插入的字符串word的 前缀之一为prefix，返回true；否则，返回false。
+ */
+
+public class hot55 {
+
+    class Trie {
+        //针对于该对象创建一个对应的节点数组，每个节点数组对应一个字符
+        private Trie[] node;
+        //用于记录当前节点是否是一个字符串的结束
+        private boolean isEnd;
+
+        public Trie() {
+            node = new Trie[26];
+            isEnd = false;
+        }
+
+
+        public void insert(String word) {
+            Trie node = this;
+            //
+            for(int i = 0; i < word.length(); i++){
+                char ch = word.charAt(i);
+                int idx = ch - 'a';
+                //在插入数据时
+                //判断当前节点数组是否为空 如果不存在则直接new一个新的出来
+                //每一个节点数组均有26个长度
+                if(node.node[idx] == null){
+                    node.node[idx] = new Trie();
+                }
+                node = node.node[idx];
+            }
+            node.isEnd = true;
+        }
+
+        public boolean search(String word) {
+            Trie node = this;
+            for(int i = 0; i < word.length(); i++){
+                char ch = word.charAt(i);
+                int idx = ch - 'a';
+                if(node.node[idx] == null){
+                    return false;
+                }
+                node = node.node[idx];
+            }
+            //当前节点不为空 且当前节点是字符串的结束
+            return node!=null && node.isEnd;
+        }
+
+        public boolean startsWith(String prefix) {
+            Trie node = this;
+            for(int i = 0; i < prefix.length(); i++){
+                char ch = prefix.charAt(i);
+                int idx = ch - 'a';
+                if(node.node[idx] == null){
+                    return false;
+                }
+                node = node.node[idx];
+            }
+            return true;
+        }
+    }
+    
+}
+```
+
+主要可能卡的点在于搜索时的判断，只有当前节点存在并且已经遍历到此节点中的字符的最后一个字符才算真正的找到该字符串，因为在第一次插入时会生成一个对应的节点，一个节点代表一个字符，此时插入之后会存于节点之中，随后去搜索的时候则也是通过节点去遍历搜索，遍历搜索到相同的节点之后便会返回，并且此时的end也代表结束，看下图即可
+
+![](assets/1768900760228.png)
+
+![](assets/1768900780613.png)
+
+![](assets/1768900907270.png)
+
+## 全排列
+
+![](assets/1768900968813.png)
+
+```
+public List<List<Integer>> permute(int[] nums) {
+    List<List<Integer>> res = new ArrayList<>();
+    if(nums == null || nums.length == 0){
+        return res;
+    }
+    List<Integer> tmp = new ArrayList<>();
+    for(int num: nums){
+        tmp.add(num);
+    }
+    int len = nums.length;
+    backtrack(res, tmp, len, 0);
+    return res;
+}
+
+private void backtrack(List<List<Integer>> res, List<Integer> tmp, int len, int index){
+    if(index == len){
+        res.add(new ArrayList<>(tmp));
+        return;
+    }
+    for(int i = index; i < len; i++){
+        // 剪枝处理
+        if(i!= index && tmp.get(i) == tmp.get(index)){
+            continue;
+        }
+        // 交换位置
+        int temp = tmp.get(i);
+        tmp.set(i, tmp.get(index));
+        tmp.set(index, temp);
+        backtrack(res, tmp, len, index + 1);
+        // 恢复位置
+        temp = tmp.get(i);
+        tmp.set(i, tmp.get(index));
+        tmp.set(index, temp);
+    }
+}
+```
+
+![](assets/1768924567653.png)
+
+![](assets/1768924586194.png)
+
+![](assets/1768924866119.png)
+
+![](assets/1768924665244.png)
+
+![](assets/1768924927745.png)
+
+以下是用数组标记的方法
+
+````
+class Solution {
+    public List<List<Integer>> permute(int[] nums) {
+        int n = nums.length;
+        List<Integer> path = Arrays.asList(new Integer[n]); // 所有排列的长度都是一样的 n
+        boolean[] onPath = new boolean[n];
+        List<List<Integer>> ans = new ArrayList<>();
+
+        dfs(0, nums, ans, path, onPath);
+        return ans;
+    }
+
+    // 枚举 path[i] 填 nums 的哪个数
+    private void dfs(int i, int[] nums, List<List<Integer>> ans, List<Integer> path, boolean[] onPath) {
+        if (i == nums.length) {
+            ans.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int j = 0; j < nums.length; j++) {
+            if (!onPath[j]) {
+                path.set(i, nums[j]); // 从没有选的数字中选一个
+                onPath[j] = true; // 已选上
+                dfs(i + 1, nums, ans, path, onPath);
+                onPath[j] = false; // 恢复现场
+                // 注意 path 无需恢复现场，因为排列长度固定，直接覆盖就行
+            }
+        }
+    }
+}
+````
+
+## 子集
+
+![](assets/1769140213609.png)
+
+```
+public List<List<Integer>> subsets(int[] nums) {
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+    backtrack(res,path,nums,0);
+    return res;
+}
+
+private void backtrack(List<List<Integer>> res,List<Integer> path,int[] nums,int index){
+    res.add(new ArrayList<>(path));
+    for(int i = index; i <nums.length; i++){
+        path.add(nums[i]);
+        backtrack(res,path,nums,i+1);
+        path.remove(path.size()-1);
+    }
+}
+```
+
+解题思路：一样的回溯思路，结果集与路径集(临时保存现场)，面向答案的取值，从0到nums.length去取值回溯，枚举每一个值去找它的组合排列，最后再恢复现场
+
+![](assets/1769148501451.png)
+
+另一种面向输入的取值
+
+````
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        List<Integer> path = new ArrayList<>();
+        dfs(0, nums, path, ans);
+        return ans;
+    }
+
+    // 选或不选：讨论 nums[i] 是否加入 path
+    private void dfs(int i, int[] nums, List<Integer> path, List<List<Integer>> ans) {
+        if (i == nums.length) { // 子集构造完毕
+            ans.add(new ArrayList<>(path)); // 复制 path
+            return;
+        }
+
+        // 不选 nums[i]
+        dfs(i + 1, nums, path, ans); // 考虑下一个数 nums[i+1] 选或不选
+
+        // 选 nums[i]
+        path.add(nums[i]);
+        dfs(i + 1, nums, path, ans); // 考虑下一个数 nums[i+1] 选或不选
+        path.removeLast(); // path.remove(path.size() - 1);
+    }
+}
+````
+
+二进制枚举，空间为O(1)
+
+```
+class Solution {
+    public List<List<Integer>> subsets(int[] nums) {
+        int n = nums.length;
+        List<List<Integer>> ans = new ArrayList<>(1 << n); // 预分配空间
+        for (int i = 0; i < (1 << n); i++) { // 枚举全集 U 的所有子集 i
+            List<Integer> subset = new ArrayList<>();
+            for (int j = 0; j < n; j++) {
+                if ((i >> j & 1) == 1) { // j 在集合 i 中
+                    subset.add(nums[j]);
+                }
+            }
+            ans.add(subset);
+        }
+        return ans;
+    }
+}
+```
+
+## 电话号码的字母组合
+
+![](assets/1769241290569.png)
+
+```
+public List<String> letterCombinations(String digits){
+    String[] numMap = {"","","abc","def","ghi","jkl","mno","pqrs","tuv","wxyz"};
+    List<String> res = new ArrayList<>();
+    if(digits == null || digits.length() == 0){
+        return res;
+    }
+    backtrack(res,numMap,digits,0,new StringBuilder());
+    return res;
+}
+
+private void backtrack(List<String> res,String[] numMap,String digits,int idx,StringBuilder path){
+    if(idx == digits.length()){
+        res.add(path.toString());
+        return;
+    }
+    String letters = numMap[digits.charAt(idx) - '0'];
+    for(int i = 0; i < letters.length(); i++){
+        path.append(letters.charAt(i));
+        backtrack(res,numMap,digits,idx+1,path);
+        path.deleteCharAt(path.length()-1);
+    }
+}
+```
+
+我想着用map集合去存储，但是一直过不了，老是读了空指针，所以只能用数组了
+
+其实思路都一样，临时现场再去恢复即可
+
+## 组合总和
+
+![](assets/1769243868276.png)
+
+```
+public List<List<Integer>> combinationSum(int[] candidates, int target) {
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+    backtrack(res,path,candidates,target,0);
+    return res;
+}
+
+private void backtrack(List<List<Integer>> res,List<Integer> path,int[] candidates,int target,int index){
+    if(target < 0 || index == candidates.length){
+        return;
+    }
+    if(target == 0){
+        res.add(new ArrayList<>(path));
+        return;
+    }
+    backtrack(res,path,candidates,target,index + 1);
+    path.add(candidates[index]);
+    backtrack(res,path,candidates,target - candidates[index],index);
+    path.remove(path.size()-1);
+}
+```
+
+## 括号生成
+
+![](assets/1769244998853.png)
+
+```
+public List<String> generateParenthesis(int n) {
+    List<String> res = new ArrayList<>();
+    backstrack(res,new StringBuilder(),0,0,n);
+    return res;
+}
+
+private void backstrack(List<String> res,StringBuilder path,int left,int right,int n){
+    if(path.length() == n*2){
+        res.add(path.toString());
+        return;
+    }
+    if(left < n){
+        path.append("(");
+        backstrack(res,path,left+1,right,n);
+        path.deleteCharAt(path.length()-1);
+    }
+    if(right < left){
+        path.append(")");
+        backstrack(res,path,left,right+1,n);
+        path.deleteCharAt(path.length()-1);
+    }
+}
+```
+
+## 单词搜索
+
+![](assets/1769353444296.png)
+
+```
+public boolean exist(char[][] board, String word) {
+    int m = board.length;
+    int n = board[0].length;
+    for(int i = 0; i < m; i++){
+        for(int j = 0; j < n; j++){
+            if(dfs(board,word,i,j,0)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+private boolean dfs(char[][] board, String word, int i, int j, int index){
+    if(index == word.length()){
+        return true;
+    }
+    if(i < 0 || i >= board.length || j < 0 || j >= board[0].length || board[i][j] != word.charAt(index)){
+        return false;
+    }
+    //临时现场
+    char temp = board[i][j];
+    board[i][j] = '.';
+    boolean res = dfs(board,word,i + 1,j,index + 1) || dfs(board,word,i - 1,j,index + 1) || dfs(board,word,i,j + 1,index + 1) || dfs(board,word,i,j - 1,index + 1);
+    //恢复现场
+    board[i][j] = temp;
+    return res;
+}
+```
+
+上述一种暴力遍历 也就是像岛屿一样的题目通过上下左右位置遍历 不过是同时递归四种情况
+
+```
+public static int[][] dirs = new int[][]{{0,1},{0,-1},{1,0},{-1,0}};
+
+public boolean exist(char[][] board, String word) {
+    int m = board.length;
+    int n = board[0].length;
+    for(int i = 0; i < m; i++){
+        for(int j = 0; j < n; j++){
+            if(dfs(board,word,i,j,0)){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+private boolean dfs(char[][] board, String word, int i, int j, int index){
+    if(word.length() == 1){
+        return board[i][j] == word.charAt(0);
+    }
+    if(index == word.length()){
+        return true;
+    }
+    if(i < 0 || i >= board.length || j < 0 || j >= board[0].length || board[i][j] != word.charAt(index)){
+        return false;
+    }
+    board[i][j] = 0;
+    for(int[] dir:dirs){
+        int x = i + dir[0];
+        int y = j + dir[1];
+        if(x>=0 && x < board.length && y >= 0 && y < board[x].length && dfs(board,word,x,y,index+1)){
+            return true;
+        }
+    }
+    board[i][j] = word.charAt(index);
+    return false;
+}
+```
+
+以下是优化方法，通过记录其次数与反转两个优化
+
+````
+class Solution {
+    private static final int[][] DIRS = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}};
+
+    public boolean exist(char[][] board, String word) {
+        // 为了方便，直接用数组代替哈希表
+        int[] cnt = new int[128];
+        for (char[] row : board) {
+            for (char c : row) {
+                cnt[c]++;
+            }
+        }
+
+        // 优化一
+        char[] w = word.toCharArray();
+        int[] wordCnt = new int[128];
+        for (char c : w) {
+            if (++wordCnt[c] > cnt[c]) {
+                return false;
+            }
+        }
+
+        // 优化二
+        if (cnt[w[w.length - 1]] < cnt[w[0]]) {
+            w = new StringBuilder(word).reverse().toString().toCharArray();
+        }
+
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (dfs(i, j, 0, board, w)) {
+                    return true; // 搜到了！
+                }
+            }
+        }
+        return false; // 没搜到
+    }
+
+    private boolean dfs(int i, int j, int k, char[][] board, char[] word) {
+        if (board[i][j] != word[k]) { // 匹配失败
+            return false;
+        }
+        if (k == word.length - 1) { // 匹配成功！
+            return true;
+        }
+        board[i][j] = 0; // 标记访问过
+        for (int[] d : DIRS) {
+            int x = i + d[0];
+            int y = j + d[1]; // 相邻格子
+            if (0 <= x && x < board.length && 0 <= y && y < board[x].length && dfs(x, y, k + 1, board, word)) {
+                return true; // 搜到了！
+            }
+        }
+        board[i][j] = word[k]; // 恢复现场
+        return false; // 没搜到
+    }
+}
+````
+
+## 分割回文串
+
+![](assets/1769356269461.png)
+
+```
+public List<List<String>> partition(String s) {
+    List<List<String>> res = new ArrayList<>();
+    List<String> path = new ArrayList<>();
+    backstrap(s,0,path,res);
+    return res;
+}
+
+private void backstrap(String s,int index,List<String> path,List<List<String>> res){
+    if(index == s.length()){
+        res.add(new ArrayList<>(path));
+        return;
+    }
+    for(int i = index; i < s.length(); i++){
+        if(isPalindrome(s,index,i)){
+            path.add(s.substring(index,i+1));
+            backstrap(s,i+1,path,res);
+            path.remove(path.size()-1);
+        }
+    }
+}
+
+private boolean isPalindrome(String s,int left,int right){
+    while(left < right){
+        if(s.charAt(left) != s.charAt(right)){
+            return false;
+        }
+        left++;
+        right--;
+    }
+    return true;
+}
+```
+
+动态规划优化
+
+````
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+
+public class Solution {
+
+    public List<List<String>> partition(String s) {
+        int len = s.length();
+        List<List<String>> res = new ArrayList<>();
+        if (len == 0) {
+            return res;
+        }
+
+        char[] charArray = s.toCharArray();
+        // 预处理
+        // 状态：dp[i][j] 表示 s[i][j] 是否是回文
+        boolean[][] dp = new boolean[len][len];
+        // 状态转移方程：在 s[i] == s[j] 的时候，dp[i][j] 参考 dp[i + 1][j - 1]
+        for (int right = 0; right < len; right++) {
+            // 注意：left <= right 取等号表示 1 个字符的时候也需要判断
+            for (int left = 0; left <= right; left++) {
+                if (charArray[left] == charArray[right] && (right - left <= 2 || dp[left + 1][right - 1])) {
+                    dp[left][right] = true;
+                }
+            }
+        }
+
+        Deque<String> stack = new ArrayDeque<>();
+        dfs(s, 0, len, dp, stack, res);
+        return res;
+    }
+
+    private void dfs(String s, int index, int len, boolean[][] dp, Deque<String> path, List<List<String>> res) {
+        if (index == len) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = index; i < len; i++) {
+            if (dp[index][i]) {
+                path.addLast(s.substring(index, i + 1));
+                dfs(s, i + 1, len, dp, path, res);
+                path.removeLast();
+            }
+        }
+    }
+}
+````
+
+中心扩展优化
+
+```
+class Solution {
+    public List<List<String>> partition(String s) {
+        List<List<String>> res = new ArrayList<>();
+        int len = s.length();
+        boolean[][] dp = new boolean[len][len];
+        for(int i = 0; i < len; i++){
+            prePro(s, i, i, dp);
+            prePro(s, i, i + 1, dp);
+        }
+        helper(res, new ArrayList<>(), s, 0, dp);
+        return res;
+    }
+	
+    //进行预处理，利用中心扩展 将所有回文子串的位置存储到 dp 中
+    private void prePro(String s, int left , int right, boolean[][] dp){
+        while(left >= 0 && right < s.length() && s.charAt(left) == s.charAt(right)){
+            dp[left][right] = true;
+            left--;
+            right++;
+        }
+    }
+	
+    private void helper(List<List<String>> res, List<String> list, String s, int index, boolean[][] dp){
+        if(index == s.length()){
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for(int i = index; i < s.length(); i++){
+            //利用预处理结果就不用再去判断该字符串是否是回文串
+            if(!dp[index][i]){
+                continue;
+            }
+            list.add(s.substring(index, i + 1));
+            helper(res, list, s, i + 1, dp);
+            list.remove(list.size() - 1);
+        }
+    }
+}
+```
+
+## N皇后问题
+
+![](assets/1769413944008.png)
+
+```
+public static int[][] dirs = new int[][]{{0,1},{0,-1},{1,0},{-1,0},{1,1},{1,-1},{-1,-1},{-1,1}};
+
+public List<List<String>> solveNQueens(int n) {
+    List<List<String>> res = new ArrayList<>();
+    char[][] board = new char[n][n];
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++){
+            board[i][j] = '.';
+        }
+    }
+    traceback(board,0,res);
+    return res;
+}
+
+private void traceback(char[][] board,int index,List<List<String>> res){
+    if(index == board.length){
+        res.add(new ArrayList<>(construct(board)));
+    }
+    int n = board.length;
+    for(int i = 0; i < n; i++){
+        if(isValid(board,index,i)){
+            board[index][i] = 'Q';
+            traceback(board,index+1,res);
+            board[index][i] = '.';
+        }
+    }
+}
+
+private List<String> construct(char[][] board){
+    List<String> list = new ArrayList<>();
+    for(int i = 0; i < board.length; i++){
+        String s = new String(board[i]);
+        list.add(s);
+    }
+    return list;
+}
+
+private boolean isValid(char[][] board,int i,int j){
+    for(int[] dir : dirs){
+        int x = i + dir[0];
+        int y = j + dir[1];
+        while(x >= 0 && x < board.length && y >= 0 && y < board[x].length){
+            if(board[x][y] == 'Q'){
+                return false;
+            }
+            x += dir[0];
+            y += dir[1];
+        }
+
+    }
+    return true;
+}
+```
+
+直接模拟棋盘走法，上下左右左下右上左上右下八个方向进行搜索，随后直接套模版，递归回溯即可，这里是dfs，逐行去搜索，每行的位置都进行一次对比
 
