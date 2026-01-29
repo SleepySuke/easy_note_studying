@@ -5017,3 +5017,156 @@ private boolean isValid(char[][] board,int i,int j){
 
 直接模拟棋盘走法，上下左右左下右上左上右下八个方向进行搜索，随后直接套模版，递归回溯即可，这里是dfs，逐行去搜索，每行的位置都进行一次对比
 
+## 搜索插入位置
+
+![](assets/1769563432557.png)
+
+```
+public int searchInsert(int[] nums, int target) {
+    int left = 0;
+    int right = nums.length - 1;
+    while(left <= right){
+        int mid = left + (right - left) / 2;
+        if(nums[mid] == target){
+            return mid;
+        } else if(nums[mid] > target){
+            right = mid - 1;
+        } else {
+            left = mid + 1;
+        }
+    }
+    return left;
+}
+```
+
+>当目标值不存在时，更新的只有left，所以最后返回的会是left的最终值
+
+## 搜索二维矩阵
+
+![](assets/1769564042265.png)
+
+```
+public boolean searchMatrix(int[][] matrix, int target) {
+    int m = matrix.length;
+    int n = matrix[0].length;
+    int x = 0;
+    int y = n - 1;
+    while(x < m && y >= 0){
+        if(matrix[x][y] == target){
+            return true;
+        }else if(matrix[x][y] > target){
+            y--;
+        }else{
+            x++;
+        }
+    }
+    return false;
+}
+```
+
+>上述方法使用排除列的方法，每行中一列一列的去比较，因为矩阵中列和行均是递增排序的，当当前行对应的列的值大于目标值时，此时该值的所在列均可排除掉，这样便减少了一定搜索量，时间复杂为矩阵的行数与列数之和
+
+```
+public boolean searchMatrix(int[][] matrix, int target) {
+    int m = matrix.length;
+    int n = matrix[0].length;
+    int left = 0;
+    int right = m * n - 1;
+    while (left <= right){
+        int mid = left + (right - left) / 2;
+        int value = matrix[mid / n][mid % n];
+        if(value == target){
+            return true;
+        }else if(value > target){
+            right = mid - 1;
+        }else{
+            left = mid + 1;
+        }
+    }
+    return false;
+}
+```
+
+>上述则为二分排序，此时它需要搜索整个矩阵的所有值，所以它的时间复杂会为行数与列数的乘积
+
+## 在排序数组中查找元素的第一个和最后一个位置
+
+![](assets/1769649772533.png)
+
+```
+public int[] searchRange(int[] nums, int target) {
+    if(nums == null || nums.length == 0){
+        return new int[]{-1,-1};
+    }
+    int l = binarySearch(nums, target, false);
+    int r = binarySearch(nums, target, true);
+    return new int[]{l,r};
+}
+
+private int binarySearch(int[] nums, int target, boolean leftOrRight){
+    int left = 0;
+    int right = nums.length - 1;
+    int res = -1;
+    while(left <= right){
+        int mid = left + (right - left) / 2;
+        if(nums[mid] == target){
+            res = mid;
+            if(leftOrRight){
+                left = mid + 1;
+            }else{
+                right = mid - 1;
+            }
+        } else if (nums[mid] < target) {
+            left = mid + 1;
+        }else{
+            right = mid - 1;
+        }
+    }
+    return res;
+}
+```
+
+>通过标志位leftOrRight去搜索左右边界，标志位为false的话则是查找左边界，true则是右边界，主要思路还是使用二分查找，但又因为这里查找的是第一个和最后一个位置，我们并不知道它可能出现在哪，如果用之前的搜索模版，返回的都是最后一个数值，所以可以使用两次模版，但在模版查询到相同值时需要对其进行左右边界判断，如果当前是查找左边界的值第一个出现的值，需要在第一次搜索查找到目标值时，将右边界缩小，固定查找区域，右边则相反
+>
+>第一次出现的值是比第二次的早，所以找到的那一刻即需要进行区域的缩小，不然会查到第二次，浪费多一次时间，且最后找到的还是最后一个索引值
+>
+>我这里则是直接使用标志位，增强查找方法的复用性
+
+## 搜索旋转排序数组
+
+![](assets/1769653537041.png)
+
+```
+public int search(int[] nums, int target) {
+    int left = 0;
+    int right = nums.length - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (nums[mid] == target) {
+            return mid;
+        }
+        if (nums[0] <= nums[mid]) {
+            if (nums[0] <= target && target <= nums[mid]) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        } else {
+            if (nums[mid] <= target && target <= nums[nums.length - 1]) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+    }
+    return -1;
+}
+```
+
+>解题思路：这道题依旧是二分查找，但需要注意的是二分查找它只能用于有序的数组，而这个给的数组是一个旋转后的数组，即轮转过后的数组，由原来的有序数组变为了无序数组，此时对于二分查找，它将无法查找出正确的值
+>
+>因而对于查找可以分为两部分进行，0~mid这部分，mid~len-1这部分，随后再使用二分查找那一套即可
+>
+>当然也可以使用两次二分查找，我这里是使用一次即可
+
