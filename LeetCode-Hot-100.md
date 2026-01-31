@@ -1684,6 +1684,16 @@ public static int getKthElement(int[] nums1, int[] nums2, int k) {
 }
 ```
 
+>主要需要理解的点是第几小的数，比如此时两个数组的长度为偶数的话，
+>
+>n = 6的时候，这时候要找的数是第3和第4这两个数，这两个数加起来除2即是中位数
+>
+>而且传入的索引表示的意思是第几小的数，即开头说的第几小为主
+>
+>后续的操作就是正常的二分查找，同时对索引进行变更排除缩小查找的范围
+>
+>对查找的第几小数对应的索引根据排除的范围来变更
+
 ## 缺失的第一个正数
 
 ```
@@ -5169,4 +5179,186 @@ public int search(int[] nums, int target) {
 >因而对于查找可以分为两部分进行，0~mid这部分，mid~len-1这部分，随后再使用二分查找那一套即可
 >
 >当然也可以使用两次二分查找，我这里是使用一次即可
+
+## 寻找旋转排序数组中的最小值
+
+![](assets/1769853158858.png)
+
+```
+public int findMin(int[] nums) {
+    int min = nums[0];
+    int left = 0;
+    int right = nums.length - 1;
+    while(left <= right){
+        int mid = left + (right - left) / 2;
+        min = Math.min(min, nums[mid]);
+        if(nums[mid] > nums[right]){
+            left = mid + 1;
+        }else{
+            right = mid - 1;
+        }
+    }
+    return min;
+}
+```
+
+## 有效的括号
+
+![](assets/1769862642792.png)
+
+```
+public boolean isValid(String s) {
+    int len = s.length();
+    if(len % 2 != 0){
+        return false;
+    }
+    Map<Character, Character> map = new HashMap<>();
+    map.put('(', ')');
+    map.put('[', ']');
+    map.put('{', '}');
+    char[] chars =  s.toCharArray();
+    Stack<Character> stack = new Stack<>();
+    for(char c : chars){
+        if(map.containsKey(c)){
+            stack.push(map.get(c));
+        }else{
+            if(stack.isEmpty() || stack.pop() != c){
+                return false;
+            }
+        }
+    }
+    return stack.isEmpty();
+}
+```
+
+下面的方法是通过数组模拟栈方法
+
+将字符串用字符数组进行存储，此后通过top指针指向下一个栈位置
+
+当匹配到左括号时，会先当前左括号的位置进行压栈覆盖，然后直接指向下一个栈位置
+
+此时下一个栈位置不属于左括号，会去判断它的上一个栈位置的值，即刚才所覆盖的值，如果此时不等，即不是有效括号，如果相等即是左括号所要匹配的右括号
+
+```
+public boolean isValid(String s) {
+    int len = s.length();
+    if(len % 2 != 0){
+        return false;
+    }
+    char[] chars = s.toCharArray();
+    int top = 0;
+    for (char c : chars) {
+        switch (c){
+            case '(':
+                chars[top++] = ')';
+                break;
+            case '[':
+                chars[top++] = ']';
+                break;
+            case '{':
+                chars[top++] = '}';
+                break;
+            default:
+                if(top == 0 || chars[--top] != c){
+                    return false;
+                }
+        }
+    }
+    return top == 0;
+}
+```
+
+## 最小栈
+
+![](assets/1769864573024.png)
+
+```
+class MinStack {
+    Stack<Integer> dataStack;
+    Stack<Integer> minStack;
+
+    public MinStack() {
+        dataStack = new Stack<>();
+        minStack = new Stack<>();
+    }
+
+    public void push(int val) {
+        dataStack.push(val);
+        if(minStack.isEmpty() || val <= minStack.peek()){
+            minStack.push(val);
+        }
+    }
+
+    public void pop() {
+        if(dataStack.pop().equals(minStack.peek())){
+            minStack.pop();
+        }
+    }
+
+    public int top() {
+        return dataStack.peek();
+    }
+
+    public int getMin() {
+        return minStack.peek();
+    }
+}
+```
+
+>辅助栈存储数据，构造比较
+
+以下是使用前缀差值进行更新最小值，空间使用缩小至O(1)
+
+```
+class MinStack {
+    //主要通过差值的方式进行获取最小值，该栈中存储的数据主要为栈的差值
+    private Stack<Long> stack;
+    private long min;
+
+    public MinStack() {
+        stack = new Stack<>();
+    }
+
+    public void push(int val) {
+        //最小栈是否为空，无数据的情况下存证明此时的最小值为当前的传入的值进行标记，将0存入
+        if(stack.isEmpty()){
+            stack.push(0L);
+            min = val;
+
+
+        }else{
+            //栈不为空，则将当前传入的值减去最小值进行标记
+            stack.push((long) val -  min);
+            if(val < min){
+                min = val;
+            }
+        }
+    }
+
+    public void pop() {
+        //将栈的差值弹出，进行比较，如果小于0则证明当前值比最小值小，则将最小值减去当前值进行标记
+        long diff = stack.pop();
+        if(diff < 0){
+            min = min - diff;
+        }
+    }
+
+    public int top() {
+        long diff = stack.peek();
+        if (diff > 0) {
+            // 如果差值大于0，说明当前值不是最小值
+            return (int)(min + diff);
+        } else {
+            // 如果差值小于等于0，说明当前值就是最小值
+            return (int)min;
+        }
+    }
+
+    public int getMin() {
+        return (int) min;
+    }
+}
+```
+
+
 
