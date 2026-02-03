@@ -5360,5 +5360,390 @@ class MinStack {
 }
 ```
 
+## 字符串解码
 
+![](assets/1769958974917.png)
+
+```
+public String decodeString(String s) {
+    StringBuilder sb = new StringBuilder();
+    char[] chars = s.toCharArray();
+    Stack<Integer> numStack = new Stack<>();
+    Stack<String> strStack = new Stack<>();
+    int num = 0;
+    for(char c : chars){
+        if(c == '['){
+            numStack.push(num);
+            strStack.push(sb.toString());
+            num = 0;
+            sb = new StringBuilder();
+        } else if (c == ']') {
+            int currentNum = numStack.pop();
+            StringBuilder temp = new StringBuilder();
+            for(int i = 0; i < currentNum; i++){
+                temp.append(sb);
+            }
+            sb = new StringBuilder(strStack.pop() + temp);
+        } else if (c >= '0' && c <= '9') {
+            num = num * 10 + c - '0';
+        }else{
+            sb.append(c);
+        }
+    }
+    return sb.toString();
+}
+```
+
+>这个解题思路算是非常清晰的，主要是代码能力问题
+>
+>就只需要拿两个栈过来进行模拟入栈出栈即可
+>
+>一个栈用于存储出现的次数，一个存储字符
+>
+>第一次遇到'['此时如果是前面没有数字的话，直接是将默认的num数值添加至数字栈中，随后将原结果也入栈，数字仍不变
+>
+>如果不是遇到'['，而是遇到数字，则是将当前字符转换为整数，即需要弹栈的次数
+>
+>当先是数字，再是'['，再是']'的时候，并且里面存的字符时，则是通过两个栈分别弹出，数字栈里面弹出的是数值，代表需要添加字符的次数，遍历循环添加即可
+>
+>主要还是代码能力问题，思路及其清晰
+
+## 每日温度
+
+![](assets/1769960478302.png)
+
+```
+public int[] dailyTemperatures(int[] temperatures) {
+    int[] res = new int[temperatures.length];
+    Stack<Integer> stack = new Stack<>();
+    for (int i = 0; i < temperatures.length; i++) {
+        int temp = temperatures[i];
+        while(!stack.isEmpty() && temperatures[stack.peek()] < temp){
+            int index = stack.pop();
+            res[index] = i - index;
+        }
+        stack.push(i);
+    }
+    return res;
+}
+```
+
+>一眼单调栈思路，单调栈：保证栈顶到栈底的递增或递减顺序
+
+![](assets/1769961059886.png)
+
+![](assets/1769961076626.png)
+
+>我上面的解法为单调递增栈，从左到右进行，此种写法栈中可以存在重复元素
+
+下面写法是从右到左的单调递减的形式，主要通过候选的方法进行
+
+```
+class Solution {
+    public int[] dailyTemperatures(int[] temperatures) {
+        int n = temperatures.length;
+        int[] ans = new int[n];
+        Deque<Integer> st = new ArrayDeque<>();
+        for (int i = n - 1; i >= 0; i--) {
+            int t = temperatures[i];
+            while (!st.isEmpty() && t >= temperatures[st.peek()]) {
+                st.pop();
+            }
+            if (!st.isEmpty()) {
+                ans[i] = st.peek() - i;
+            }
+            st.push(i);
+        }
+        return ans;
+    }
+}
+```
+
+>从右到左的空间效率为O(min(n,U)) U = max(temp) - min(temp) +1
+>
+>有时候可以看看人家的数组模拟栈方法，效率相对很高
+
+```
+class Solution {
+    public int[] dailyTemperatures(int[] temperatures) {
+        int n = temperatures.length;
+        int[] ans = new int[n];
+        int[] st = new int[n]; // 数组模拟，效率更高
+        int top = -1;
+        for (int i = 0; i < n; i++) {
+            int t = temperatures[i];
+            while (top >= 0 && t > temperatures[st[top]]) {
+                int j = st[top--];
+                ans[j] = i - j;
+            }
+            st[++top] = i;
+        }
+        return ans;
+    }
+}。
+```
+
+## 柱状图中最大的矩形
+
+![](assets/1769996522203.png)
+
+```
+public int largestRectangleArea(int[] heights) {
+    if(heights == null || heights.length == 0){
+        return 0;
+    }
+    int area = 0;
+    Deque<Integer> stack = new ArrayDeque<>();
+    stack.push(-1);
+    for(int i = 0; i <= heights.length; i++){
+        int height = i < heights.length ? heights[i] : -1;
+        while(stack.size() > 1 && heights[stack.peek()] >= height){
+            int curHeight = heights[stack.pop()];
+            int curWidth = i - stack.peek() - 1;
+            area = Math.max(area, curHeight * curWidth);
+        }
+        stack.push(i);
+    }
+    return area;
+}
+```
+
+使用单调栈，但理不清思路
+
+## 数组中的第K个最大元素
+
+![](assets/1769999857628.png)
+
+```
+private static final Random rand = new Random();
+
+public int findKthLargest(int[] nums, int k) {
+    int left = 0;
+    int right = nums.length - 1;
+    int index = nums.length - k;
+    while(true){
+        int pos = partition(nums, left, right);
+        if(pos == index){
+            return nums[pos];
+        }else if(pos < index){
+            left = pos + 1;
+        }else{
+            right = pos - 1;
+        }
+    }
+}
+
+private int partition(int[] nums, int left, int right){
+    int i = left + rand.nextInt(right - left + 1);
+    int p = nums[i];
+    swap(nums, i, left);
+    i = left + 1;
+    int j = right;
+    while(true){
+        while (i <= j && nums[i] < p) {
+            i++;
+        }
+        // 此时 nums[i] >= p
+
+        while (i <= j && nums[j] > p) {
+            j--;
+        }
+        // 此时 nums[j] <= p
+
+        if (i >= j) {
+            break;
+        }
+
+        // 维持循环不变量
+        swap(nums, i, j);
+        i++;
+        j--;
+
+    }
+    swap(nums, left, j);
+    return j;
+}
+
+private void swap(int[] nums, int i, int j){
+    int temp = nums[i];
+    nums[i] = nums[j];
+    nums[j] = temp;
+}
+```
+
+>看别人用的快速选择排序，其实可以通过建堆来实现，我之前写的时候是通过建堆实现的，建立大顶堆可以实现
+
+````
+    public int findKthLargest(int[] nums, int k) {
+         int n = nums.length;
+        buildMaxHeap(nums, n);
+        for (int i = nums.length - 1; i >= nums.length - k + 1; i--) {
+            swap(nums, 0, i);
+            n--;
+            siftDown(nums, n, 0);
+        }
+        return nums[0];
+    }
+      public void buildMaxHeap(int[] nums, int n) {
+        for (int i = nums.length / 2 - 1; i >= 0; i--) {
+            siftDown(nums, n, i);
+        }
+    }
+
+    public void siftDown(int[] nums, int n, int k) {
+        while (true) {
+            int l = 2 * k + 1;
+            int r = 2 * k + 2;
+            int max = k;
+            if (l < n && nums[l] > nums[max]) {
+                max = l;
+            }
+            if (r < n && nums[r] > nums[max]) {
+                max = r;
+            }
+            if (max == k) {
+                break;
+            }
+            swap(nums, k, max);
+            k = max;
+        }
+    }
+
+    public void swap(int[] nums,int i,int j){
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+````
+
+## 前K个高频元素
+
+![](assets/1770130460743.png)
+
+```
+public int[] topKFrequent(int[] nums, int k) {
+    int[] res = new int[k];
+    int max = nums[0];
+    int min = nums[0];
+    for (int i = 0; i < nums.length; i++) {
+        if (nums[i] > max) {
+            max = nums[i];
+        }
+        if (nums[i] < min) {
+            min = nums[i];
+        }
+    }
+    int[] count = new int[max - min + 1];
+    int maxCount = 0;
+    for (int i = 0; i < nums.length; i++) {
+        count[nums[i] - min]++;
+        maxCount = Math.max(maxCount, count[nums[i] - min]);
+    }
+    List<Integer>[] buckets = new ArrayList[maxCount + 1];
+    Arrays.setAll(buckets, i -> new ArrayList<>());
+    for (int i = min; i <= max; i++) {
+        buckets[count[i - min]].add(i);
+    }
+    int index = 0;
+    for (int i = maxCount; i >= 0 && index < k; i--) {
+        for (int x : buckets[i]) {
+            res[index++] = x;
+        }
+    }
+
+    return res;
+}
+```
+
+>主要思路：类似特征提取操作，将对应的数出现的次数进行提取，随后去比较
+
+````
+class Solution {
+    public int[] topKFrequent(int[] nums, int k) {
+        // 步骤1：找到nums中的最大值和最小值，确定数字范围（解决数组映射问题）
+        int min = nums[0], max = nums[0];
+        for (int num : nums) {
+            if (num < min) min = num;
+            if (num > max) max = num;
+        }
+
+        // 步骤2：创建频率数组，统计每个数字的出现次数（核心：num - min 做偏移量，映射到0开始的索引）
+        int[] freq = new int[max - min + 1];
+        for (int num : nums) {
+            freq[num - min]++; // 每出现一次，对应索引的频率+1
+        }
+
+        // 步骤3：按频率从高到低遍历，收集前k个高频数字（暴力核心：双层循环找最大频率）
+        int[] res = new int[k];
+        int index = 0; // 结果数组的下标
+
+        // 优化：先找实际的最大频率，避免从nums.length开始无效循环
+        int realMaxFreq = 0;
+        for (int f : freq) {
+            if (f > realMaxFreq) realMaxFreq = f;
+        }
+        int maxFreq = realMaxFreq; // 用实际最大频率替代nums.length
+        
+        while (index < k) { // 收集满k个就停止
+            for (int i = 0; i < freq.length; i++) {
+                if (freq[i] == maxFreq) { // 找到当前最大频率的数字
+                    res[index++] = i + min; // 偏移量还原：索引i → 原数字i+min
+                    if (index == k) break; // 提前退出，避免多余循环
+                }
+            }
+            maxFreq--; // 当前最大频率的数字收集完，找下一个更小的频率
+        }
+
+        return res;
+    }
+}
+````
+
+>这个思路更加的奇妙，主要操作与我所写的不一致，主要操作里面对收集的次数，
+>
+>先从次数最多的进行比较与收集结果，收集完之后，根据传入的k值去判断是否还需要收集第二个数值
+
+## 数据流的中位数
+
+![](assets/1770133222641.png)
+
+```
+class MedianFinder {
+    PriorityQueue<Integer> maxHeap;
+    PriorityQueue<Integer> minHeap;
+
+    public MedianFinder() {
+        maxHeap = new PriorityQueue<>((a, b) -> b - a);
+        minHeap = new PriorityQueue<>();
+    }
+
+    public void addNum(int num) {
+        if(maxHeap.size() == minHeap.size()){
+            minHeap.offer( num);
+            maxHeap.offer(minHeap.poll());
+        }else{
+            maxHeap.offer(num);
+            minHeap.offer(maxHeap.poll());
+        }
+    }
+
+    public double findMedian() {
+        if(maxHeap.size() == minHeap.size()){
+            return (maxHeap.peek() + minHeap.peek()) / 2.0;
+        }else{
+            return maxHeap.peek();
+        }
+    }
+}
+```
+
+>直接背题，使用的大顶堆与小顶堆，大顶堆主要用于获取到分割的两个数组中小数组中的最大值，小顶堆则是获取到大数组中的最小值
+>
+>主要是建堆操作比较难，这里直接使用api是最快的
+>
+>其实理解起来不难的，需要保持两个堆的状态，两个堆之间相差不能大于1，并且大顶堆的大小一定要小于小顶堆的大小，维持好状态，再去分情况讨论即可。直接套中位数的情况讨论，偶数的话则是两个中间数相加，奇数则是拿最中间的数
+>
+>当个数为偶数时，即两个堆的大小一致，不管添加的数大还是小，最终的数值都会添加至小顶堆之中
+>
+>奇数的时候，此时的大顶堆个数会比小顶堆个数多1，中位数即是当前大顶堆的最大值
 

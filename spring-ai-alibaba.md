@@ -641,6 +641,10 @@ RAG流程实现：索引和检索，先建索引再去检索
 
 对于rag文档内容改变暂且不知道如何解决
 
+在Java中的topK的参数为返回相似的数量
+
+以及一个阈值，相似度达多少即可返回
+
 ## ToolCalling工具调用
 
 LLM外部的utils工具类
@@ -703,7 +707,125 @@ MCP与ToolCalling的对比
 
 ![76433490262](assets/1764334902629.png)
 
+## Advisor
 
+![](assets/1770085740154.png)
+
+>Advisor主要用于增强顾问，将prompt转为请求，先对请求进行增强，随后调用llm，拿到结果之后，再去增强一遍，返回增强之后的结果
+>
+>它就类似AOP中的拦截器一样，主要通过拦截并动态调整LLM的输入输出，增强LLM的交互能力
+
+![](assets/1770090698010.png)
+
+![](assets/1770086611032.png)
+
+多轮对话的时候，可以使用advisor，然后通过会话的id，回滚查询到之前的对话，拼接到新的问题中，结合两次对话，传给model，进行回答，两者的对话都需要进行存储
+
+>SpringAI里面的BaseAdvisor接口同时继承了CallAdvisor、StreamAdvisor，这样方便了调用实现，而不用需要不同的需求时进行不同的实现，BaseAdvisor里面都默认实现了两种增强
+>
+>在实现的时候，对BaseAdvisor的before和after重写即可完成，不同的增强使用
+
+```
+package com.suke.ai.advisor;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClientRequest;
+import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.prompt.Prompt;
+
+import java.util.*;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ */
+@Slf4j
+public class SimpleMessageAdvisor implements BaseAdvisor {
+
+    //存储的消息列表
+    private static Map<String, List<Message>> messageList = new HashMap<>();
+
+    @Override
+    public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
+        log.info("请求之前的消息 - >{}", chatClientRequest);
+        //通过用户id进行查询之前的对话
+        String id = "111";
+        List<Message> messages = messageList.get(id);
+        //如果之前没有对话，则是新对话，直接存储
+        if(messages == null){
+            messages = new ArrayList<>();
+        }
+        //存在上次对话，将这次新对话进行拼接存储
+        List<Message> instructions = chatClientRequest.prompt().getInstructions();
+        messages.addAll(instructions);
+        //对话拼接之后，更新这次请求对话内容
+        Prompt oldPrompt = chatClientRequest.prompt();
+        Prompt newPrompt = oldPrompt.mutate().messages(messages).build();
+        ChatClientRequest clientRequest = chatClientRequest.mutate().prompt(newPrompt).build();
+        //拿到新请求之后，需要将本次的对话再次进行存储
+        messageList.put(id, messages);
+        return clientRequest;
+    }
+
+    @Override
+    public ChatClientResponse after(ChatClientResponse chatClientResponse, AdvisorChain advisorChain) {
+        String id = "111";
+        List<Message> historyMsg = messageList.get(id);
+
+        if(historyMsg == null){
+            historyMsg = new ArrayList<>();
+        }
+
+        if(Objects.isNull(chatClientResponse)){
+            return chatClientResponse;
+        }
+        AssistantMessage output = chatClientResponse.chatResponse().getResult().getOutput();
+        historyMsg.add(output);
+        messageList.put(id, historyMsg);
+        log.info("响应之后的消息 - >{}", chatClientResponse);
+        return chatClientResponse;
+    }
+
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+}
+```
+
+>我这里写死的id，其实可以通过threadlocal拿到上下文的id即可
+>
+>也可以使用advisorcontext，如下两个图，我认为可以使用threadlocal
+>
+>响应和请求都是一样的操作
+
+![](assets/1770088755673.png)
+
+![](assets/1770088763035.png)
+
+官方也是有一个已经实现的advisor，对于使用的话，看个人需求进行选择
+
+```
+public ChatClientController(ChatModel chatModel) {
+    MessageWindowChatMemory memory = MessageWindowChatMemory.builder().maxMessages(100).chatMemoryRepository(new InMemoryChatMemoryRepository()).build();
+    MessageChatMemoryAdvisor memoryAdvisor = MessageChatMemoryAdvisor.builder( memory).build();
+    this.chatClient = ChatClient.builder(chatModel).defaultAdvisors(memoryAdvisor).build();
+}
+```
+
+还有一个参数可以设置，即存储对话的仓库，比如数据库或者内存数据库都可以
+
+>```
+>chatMemoryRepository(new InMemoryChatMemoryRepository())
+>该参数默认是设置的话，是存储在内存之中
+>MessageWindowChatMemory 上下文窗口
+>```
+
+>maxMessages 针对上下文窗口的实现，其实可以通过官方实现的进行AI记忆，然后用户的可以自身进行重写实现，做数据持久化
 
 
 
