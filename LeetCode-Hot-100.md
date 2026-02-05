@@ -5747,3 +5747,101 @@ class MedianFinder {
 >
 >奇数的时候，此时的大顶堆个数会比小顶堆个数多1，中位数即是当前大顶堆的最大值
 
+## 买卖股票的最佳时机
+
+![](assets/1770260319433.png)
+
+```
+public int maxProfit(int[] prices) {
+    int res = 0;
+    int min = prices[0];
+    for (int price : prices) {
+        min = Math.min(min, price);
+        res = Math.max(res, price - min);
+    }
+    return res;
+}
+```
+
+>如果是强制交易一次的话，此时结果可能会存在亏损
+>
+>思路：就是在购买的时候，先强制一次的交易即res = price[1] - price[0]
+
+```
+public int maxProfit(int[] prices) {
+    
+    if(prices == null || prices.length < 2){
+        return 0;
+    }
+    
+    int res = prices[1] - prices[0];
+    int min = prices[0];
+    for (int price : prices) {
+        min = Math.min(min, price);
+        res = Math.max(res, price - min);
+    }
+    return res;
+}
+```
+
+## 跳跃游戏
+
+![](assets/1770261850934.png)
+
+```
+public boolean canJump(int[] nums) {
+    int skip = nums[0];
+    int n = nums.length;
+    for(int i = 1; i < n; i++){
+        if(skip == 0){
+            return false;
+        }
+        int curSkip = nums[i];
+        skip = Math.max(skip - 1,curSkip);
+    }
+    return true;
+}
+```
+
+>主要问题会出现在skip这一块，此时对于skip跳跃的长度，如果为0，此时肯定是跳不到最后一个下标的，每次都拿最多跳跃的次数
+>
+>这里为何要使用 skip = Math.max(skip - 1,curSkip);而不使用skip--;
+>
+>主要为了能够保证每次拿到的都是当前下标中的值，因为其中的值为对应的跳跃长度，而且如果是使用skip--，会出现即使当前拿到的跳跃长度不是0，它也会导致最后的结果提前结束，不管怎样都无法到达最后的下标
+>
+>可以如此理解，使用skip--时，我每次刚拿到跳跃次数，还没开始已经扣减了一次，这样便导致少跳一次，就好比打cs时，还没开始就被队友炸了一半血条，此时怎么玩呢
+
+## 跳跃游戏II
+
+![](assets/1770263205779.png)
+
+```
+public int jump(int[] nums) {
+    int n = nums.length;
+    if(n <= 1){
+        return 0;
+    }
+    int skip = nums[0];
+    int count = 1;
+    int nextSkip = 0;
+    for (int i = 1; i < n; i++) {
+        if (i > skip) {
+            skip = nextSkip;
+            count++;
+        }
+        nextSkip = Math.max(nextSkip, i + nums[i]);
+    }
+    return count;
+}
+```
+
+>跟上一个的思路一样，但这时候不需要进行对0的处理，需要处理的是只有一个元素的时候，同时每次也是拿最大的次数进行跳跃
+>
+>我们维护当前能够到达的最大下标位置，记为边界。我们从左到右遍历数组，到达边界时，更新边界并将跳跃次数增加 1
+>
+>此时唯一变化的思路是需要多维护一个下一次的跳跃次数，当目前的跳跃次数小于索引时证明无法跳到下一个最远的地方，此时需要下一次的跳跃次数进行跳跃
+
+## 划分字母区间
+
+![](assets/1770280145569.png)
+
