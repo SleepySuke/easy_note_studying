@@ -5845,3 +5845,67 @@ public int jump(int[] nums) {
 
 ![](assets/1770280145569.png)
 
+```
+public List<Integer> partitionLabels(String s) {
+    char[] chars = s.toCharArray();
+    int[] last = new int[26];
+    for(int i = 0; i < chars.length; i++){
+        last[chars[i] - 'a'] = i; //字母最后出现的次数，即是某个字母所在区间的最后一位
+    }
+    int start = 0;
+    int end = 0;
+    List<Integer> res = new ArrayList<>();
+    for(int i = 0; i < chars.length; i++){
+        end = Math.max(end,last[chars[i] - 'a']); //当前区间右端点的最大值
+        if(i == end){ //区间合并完成
+            res.add(end - start + 1); //长度
+            start = i + 1; //下一个区间的左端点
+        }
+    }
+    return res;
+}
+```
+
+>理解题目意思，同一字母最多出现在一个片段中，意味着一个片段如果出现某个字母，此时所有的字母都需要在该片段之中，贪心所有数据
+>
+>找到所有区间之后，进行合并即可
+
+## 爬楼梯
+
+![](assets/1770305076216.png)
+
+```
+public int climbStairs(int n) {
+    if(n <= 0){
+        return 0;
+    }
+    if(n == 1){
+        return 1;
+    }
+    if(n == 2){
+        return 2;
+    }
+    int[] dp = new int[n + 1];
+    dp[1] = 1;
+    dp[2] = 2;
+    for(int i = 3; i <= n; i++){
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+    return dp[n];
+}
+```
+
+>经典动态问题
+>
+>找动态方程，此时有3阶的时候，一开始走1，此时还剩下2要走，有4阶，还剩3，所以如果每次都走1的话，此时剩下的会有n-1阶要走
+>
+>如果走2的话，那就是n-2阶要走
+>
+>此时可以对两个走法初始化，从两种走法后的下一个阶级，这时候的走到的这一阶级为两种走法的和，所以动态方程如下
+>
+>dp[n] = dp[n-1] + dp[n-2]
+
+## 杨辉三角
+
+![](assets/1770306233314.png)
+
