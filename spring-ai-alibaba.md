@@ -701,11 +701,23 @@ MCP与ToolCalling的对比
 
 **客户端：**
 
-![76433475455](assets/1764334754554.png)
+![](assets/1764334754554.png)
 
 ![76433482198](assets/1764334821989.png)
 
-![76433490262](assets/1764334902629.png)
+![](assets/1764334902629.png)
+
+![](assets/1770465812925.png)
+
+![](assets/1770465864710.png)
+
+![](assets/1770465882458.png)
+
+>MCP Client是存在于MCP Host即AI应用中的，实际过程中只需要去实现MCP Server即可，实现之后MCP Client去使用
+>
+>在MCP Client使用中，需要配置一些信息，比如是MCPServer的地址
+
+![](assets/1770467320913.png)
 
 ## Advisor
 

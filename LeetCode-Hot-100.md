@@ -5909,3 +5909,495 @@ public int climbStairs(int n) {
 
 ![](assets/1770306233314.png)
 
+```
+public List<List<Integer>> generate(int numRows) {
+    List<List<Integer>> res = new ArrayList<>();
+    for (int i = 0; i < numRows; i++) {
+        List<Integer> row = new ArrayList<>();
+        for (int j = 0; j <= i; j++) {
+            if (j == 0 || j == i) {
+                row.add(1);
+            } else {
+                row.add(res.get(i - 1).get(j - 1) + res.get(i - 1).get(j));
+            }
+        }
+        res.add(row);
+    }
+    return res;
+}
+```
+
+## 打家劫舍
+
+![](assets/1770385672107.png)
+
+```
+    public int rob(int[] nums) {
+        int n = nums.length;
+        if(n == 0){
+            return 0;
+        }
+        int[] dp = new int[n + 1];
+        dp[1] = nums[0]; //只有一个房屋的时候就是偷窃该房屋
+        for(int i = 2; i <=n; i++){
+            // dp[i] 表示前i家能偷窃到的最高金额
+            // 当前金额的位置，当不去获取当前位置的金额，可以去获取n-1的金额，由于不能获取相邻的金额，所以需要去考虑获取n-2的加上当前位置的金额
+            //dp[i-1]表示不拿当前位置的金额
+            //dp[i-2] + nums[i-1]表示拿当前位置的金额，nums[i-1]当前位置的收益
+            dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i - 1]);
+        }
+        return dp[n];
+    }
+```
+
+>动态规划啦，标准流程，注意不要取连续的两个点位
+
+## 完全平方数
+
+![](assets/1770387681448.png)
+
+```
+public int numSquares(int n) {
+    int[] dp = new int[n + 1];
+    for(int i = 1; i <= n; i++){
+        dp[i] = i;
+        for(int j = 1; j * j <= i; j++){
+            dp[i] = Math.min(dp[i], dp[i - j * j] + 1);
+        }
+    }
+    return dp[n];
+}
+```
+
+>动态递推，所有的数据区间会在[1,sqrt(i)]，dp[i]表示的是最少需要多少个数的平方来表示i这个数值，在二层循环时每次都去枚举数值，此时代表了需要的数还有i-j*j个
+>
+>此时是已经用掉一个对应的完全平方数j*j，所以到最后的值需要加回来即+1
+
+还有一种四平方和定理
+
+![](assets/1770389677140.png)
+
+![](assets/1770395019226.png)
+
+````
+public int numSquares(int n) {
+    // 1. 检查是否为完全平方数
+    if (isPerfectSquare(n)) {
+        return 1;
+    }
+    
+    // 2. 检查是否可以表示为两个平方数之和
+    for (int i = 1; i * i <= n; i++) {
+        if (isPerfectSquare(n - i * i)) {
+            return 2;
+        }
+    }
+    
+    // 3. 检查是否为 4^k(8m+7) 形式
+    int temp = n;
+    while (temp % 4 == 0) {
+        temp /= 4;
+    }
+    if (temp % 8 == 7) {
+        return 4;
+    }
+    
+    // 4. 否则返回 3
+    return 3;
+}
+
+private boolean isPerfectSquare(int x) {
+    int sqrt = (int) Math.sqrt(x);
+    return sqrt * sqrt == x;
+}
+````
+
+## 零钱兑换
+
+![](assets/1770563121169.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ * @date 2026-02-08 23:05
+ * @description LeetCode85 零钱兑换
+ */
+public class hot85 {
+    public int coinChange(int[] coins, int amount) {
+        int len = coins.length;
+        int[] dp = new int[amount + 1];
+        for(int i = 1; i <= amount; i++){
+            dp[i] = amount + 1;
+            for(int j = 0; j < len; j++){
+                if(coins[j] <= i){
+                    dp[i] = Math.min(dp[i], dp[i - coins[j]] + 1); //+1表示多一个当前位置的金额
+                }
+            }
+        }
+        return dp[amount] > amount ? -1 : dp[amount];
+    }
+}
+```
+
+>跟爬楼梯的思路差不多，把amount看作要爬的阶数，coins数组则是每次可以爬的次数
+
+## 单词拆分
+
+![](assets/1770604759973.png)
+
+```
+public boolean wordBreak(String s, List<String> wordDict) {
+    int n = s.length();
+    boolean[] f = new boolean[n+1];
+    f[0] = true;
+    for(int i = 1; i <= n; i++){
+        for(int j = i - 1; j >= 0; j--){
+            if(f[j] && wordDict.contains(s.substring(j,i))){
+                f[i] = true;
+                break;
+            }
+        }
+    }
+    return f[n];
+}
+```
+
+## 最长递增子序列
+
+![](assets/1770605397696.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ * @date 2026-02-09 10:50
+ * @description LeetCode87 最长递增子序列
+ */
+public class hot87 {
+    
+    public int lengthOfLIS(int[] nums) {
+        if(nums.length == 0){
+            return 0;
+        }
+        int n = nums.length;
+        int res = 0;
+        int[] dp = new int[n];
+        for(int i = 0; i < n; i++){
+            dp[i] = 1;
+        }
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < i; j++){
+                if(nums[i] > nums[j]){
+                    dp[i] = Math.max(dp[i], dp[j] + 1);
+                }
+            }
+            res = Math.max(res, dp[i]);
+        }
+        return res;
+    }
+}
+```
+
+>时间复杂为O(n^2)
+
+建议使用二分查找，这样能达到百分百
+
+```
+public int lengthOfLIS(int[] nums) {
+    if (nums.length == 0) {
+        return 0;
+    }
+    int n = nums.length;
+    int res = 0;
+    int[] temp = new int[n];
+    for (int num : nums) {
+        int left = 0, right = res - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (temp[mid] < num) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+
+        }
+        temp[left] = num;
+        if (left == res) {
+            res++;
+        }
+    }
+    return res;
+}
+```
+
+## 乘积最大子数组
+
+![](assets/1770686915525.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ * @date 2026-02-10 09:31
+ * @description LeetCode88 乘积最大子数组
+ */
+public class hot88 {
+    public int maxProduct(int[] nums) {
+        int fMin = 1;
+        int fMax = 1;
+        int res = Integer.MIN_VALUE;
+        for (int num : nums) {
+            int temp = fMax;
+            fMax = Math.max(Math.max(fMax,fMin*num), num);
+            fMin = Math.min(Math.min(fMin,temp*num), num);
+            res = Math.max(res, fMax);
+        }
+        return res;
+    }
+}
+```
+
+一个更加明确的版本，因为存在正负关系，负负得正会存在较大值
+
+````
+class Solution {
+    public int maxProduct(int[] nums) {
+        int len = nums.length;
+        int[] minDp = new int[len + 1];
+        int[] maxDp = new int[len + 1];
+        // dp数组的0位置默认空序列，初始化为1(不参与最大值的更新)
+        minDp[0] = 1;
+        maxDp[0] = 1;
+        int ans = Integer.MIN_VALUE;
+        for (int i = 0; i < len; i++) {
+            // 乘正数，不变号，0也算进去
+            if (nums[i] >= 0) {
+                minDp[i + 1] = Math.min(minDp[i] * nums[i], nums[i]);
+                maxDp[i + 1] = Math.max(maxDp[i] * nums[i], nums[i]);
+            } else {
+                minDp[i + 1] = Math.min(maxDp[i] * nums[i], nums[i]);
+                maxDp[i + 1] = Math.max(minDp[i] * nums[i], nums[i]);
+            }
+            // 比较更新最大值
+            ans = Math.max(ans, maxDp[i + 1]);
+        }
+        return ans;
+    }
+}
+````
+
+## 分割等和子集
+
+![](assets/1770692884751.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ * @date 2026-02-10 11:08
+ * @description LeetCode89 分割等和子集
+ */
+public class hot89 {
+    public boolean canPartition(int[] nums) {
+        if(nums.length < 2){
+            return false;
+        }
+        int sum = 0;
+        int maxNum = 0;
+        for (int num : nums) {
+            sum += num;
+            maxNum = Math.max(maxNum, num);
+        }
+        int target = sum / 2;
+        if(sum % 2 != 0 || maxNum > target){
+            return false;
+        }
+        boolean[][] dp = new boolean[nums.length][target + 1];
+        for (int i = 0; i < nums.length; i++) {
+            dp[i][0] = true;
+        }
+        dp[0][nums[0]] = true;
+        for (int i = 1; i < nums.length; i++) {
+            for (int j = 1; j <= target; j++) {
+                if(j - nums[i] >= 0){
+                    dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i]];
+                }else{
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+        return dp[nums.length - 1][target];
+    }
+}
+```
+
+>这道题最妙的想法在于因为需要将整个数组分割为两个子集，所以此时会是一半一半，即是整个数组和/2，需要能够正常分割的话，此时数组的总和必须为偶数，是奇数则可以直接返回，它的target就是数组和的一半，找到即可
+>
+>题目的妙处就在于此
+
+>建立的DP表，i代表的是nums中考虑前i+1个元素，j的话则是对应的目标和，从0~target
+
+````
+行(i) \ 列(j) | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+-------------|---|---|---|---|---|---|---|---|---|---|----|----|
+i=0 (元素[1]) | T | T | F | F | F | F | F | F | F | F | F  | F  |
+i=1 (元素[1,5])| T | T | F | F | F | T | T | F | F | F | F  | F  |
+i=2 (元素[1,5,11])|T| T | F | F | F | T | T | F | F | F | F  | T  |
+i=3 (所有元素) | T | T | F | F | F | T | T | F | F | F | T  | T  |
+````
+
+>对于dp表，如果需要优化的话，可以提前结束，即剪枝操作，但操作还是需要把整个数组进行选举，只是说，对应可以提前返回的话，对于最后一个数是选与不选的操作
+
+## 最长有效括号
+
+![](assets/1770696472378.png)
+
+```
+public int longestValidParentheses(String s) {
+    int maxLen = 0;
+    List<Integer> st = new ArrayList<>();
+    st.add(-1);
+    for (int i = 0; i < s.length(); i++) {
+        if(s.charAt(i) == '('){
+            st.add(i);
+        } else if (st.size() > 1) {
+            st.remove(st.size()-1);
+            maxLen = Math.max(maxLen, i - st.get(st.size()-1));
+        }else{
+            st.set(0,i);
+        }
+    }
+    return maxLen;
+}
+```
+
+>使用栈进行模拟，跟有效括号的思路几乎一样，不过这里是获取连续的最长长度
+
+以下是一种不需要使用空间的，这里的空间复杂跟创建的集合有关，所以要节省空间的话，则使用原来的字符即可，创建对应的字符数组，双指针模拟括号的移动
+
+````
+class Solution {
+    public int longestValidParentheses(String s) {
+        int n = s.length();
+        int ans = 0;
+        int left = 0;
+        int right = 0;
+        for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == '(') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left < right) { // 拆弹器太多了，s[i] 变成红线，重置计数器
+                left = right = 0;
+            } else if (left == right) { // 完美拆弹
+                ans = Math.max(ans, right * 2);
+            }
+        }
+
+        left = right = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            if (s.charAt(i) == ')') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left < right) { // 拆弹器太多了，s[i] 变成红线，重置计数器
+                left = right = 0;
+            } else if (left == right) { // 完美拆弹
+                ans = Math.max(ans, right * 2);
+            }
+        }
+        return ans;
+    }
+}
+````
+
+## 不同路径
+
+![](assets/1770734101566.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ * @date 2026-02-10 22:37
+ * @description LeetCode91 不同路径
+ */
+public class hot91 {
+    public int uniquePaths(int m, int n) {
+        int[][] dp = new int[m][n];
+        for(int i = 0; i < m; i++){
+            dp[i][0] = 1;
+        }
+        for(int j = 0; j < n; j++){
+            dp[0][j] = 1;
+        }
+        for(int i = 1; i < m; i++){
+            for(int j = 1; j < n; j++){
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+            }
+        }
+        return dp[m - 1][n - 1];
+    }
+}
+```
+
+>递推方程可以从目的地向后递推，要走到(i,j)的话，只能从上方或左方走来
+>
+>则此时上方为(i,j-1)，左方则是(i-1,j)，两者相加得到结果值
+
+下面是一维数组的优化，节省了空间
+
+````
+class Solution {
+    public int uniquePaths(int m, int n) {
+        int[] f = new int[n];
+        for (int i = 0; i < n; ++i) {
+            f[i] = 1;
+        }
+        for (int i = 1; i < m; ++i) {
+            for (int j = 1; j < n; ++j) {
+                f[j] += f[j - 1];
+            }
+        }
+        return f[n - 1];
+    }
+}
+````
+
+还有一种惊为天人的，数学组合，拿来学习
+
+````
+class Solution {
+    public int uniquePaths(int m, int n) {
+        long ans = 1;
+        for (int x = n, y = 1; y < m; ++x, ++y) {
+            ans = ans * x / y;
+        }
+        return (int) ans;
+    }
+}    
+````
+
+>这个组合数学并不难，只是别人发现数学的规律，因为每次都只能向下或向右，此时通过画图出来，数格子，会发现，每次到终点走的步数都是m+n-2次，然后拆分一下，向下为m-1，向右n-1，最后从总数中取其中一个
+>
+>则是排列组合Cm-1/m+n-2
+>
+>对于ans = asn*x/y，将C(m,n)的阶乘展开，代入数即可证明
+
+
+
+
+
