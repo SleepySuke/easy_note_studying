@@ -839,7 +839,81 @@ public ChatClientController(ChatModel chatModel) {
 
 >maxMessages 针对上下文窗口的实现，其实可以通过官方实现的进行AI记忆，然后用户的可以自身进行重写实现，做数据持久化
 
+## Graph
 
+![](assets/1770780814458.png)
+
+![](assets/1770780857855.png)
+
+需要的主要依赖
+
+```
+        <dependency>
+            <groupId>com.alibaba.cloud.ai</groupId>
+            <artifactId>spring-ai-alibaba-graph-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+```
+
+>这里引入SpringAI版本不同，使用的API也不同，我目前是如下的版本
+>
+>```
+><!--        Spring-AI-->
+><spring-ai.version>1.0.0</spring-ai.version>
+><!--        Spring-AI-Alibaba-->
+><spring-ai-alibaba.version>1.0.0.2</spring-ai-alibaba.version>
+>```
+
+>所以我使用的API如图所示
+
+![](assets/1770790065080.png)
+
+这里创建的是各个状态，注册进去，目前1.0.0有两种策略，一种替换，一种追加
+
+新版本的话，则是KeyStrategyFactory进行注册，新版的策略如图，注册之后，直接在定义StateGraph的时候直接传入对应的keyStrategy即可，而旧版本的话则是传入如下操作
+
+```
+StateGraph stateGraph = new StateGraph("quickGraph", overAllStateFactory);
+```
+
+![](assets/1770790179952.png)
+
+![](assets/1770790554120.png)
+
+还有一个AsyncNodeAction，这个则是节点的异步工作，使用的是CompletableFuture去实现的
+
+异步操作
+
+````
+@FunctionalInterface
+public interface AsyncNodeAction extends Function<OverAllState, CompletableFuture<Map<String, Object>>> {
+    CompletableFuture<Map<String, Object>> apply(OverAllState t);
+
+    static AsyncNodeAction node_async(NodeAction syncAction) {
+        return (t) -> {
+            CompletableFuture<Map<String, Object>> result = new CompletableFuture();
+
+            try {
+                result.complete(syncAction.apply(t));
+            } catch (Exception var4) {
+                Exception e = var4;
+                result.completeExceptionally(e);
+            }
+
+            return result;
+        };
+    }
+}
+````
+
+![](assets/1770790817253.png)
+
+### 条件边
+
+![](assets/1770812798446.png)
 
 
 

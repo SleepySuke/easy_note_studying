@@ -6397,6 +6397,67 @@ class Solution {
 >
 >对于ans = asn*x/y，将C(m,n)的阶乘展开，代入数即可证明
 
+## 最小路径和
+
+![](assets/1770821510151.png)
+
+```
+package leetcodehot100;
+
+/**
+ * @author 自然醒
+ * @version 1.0
+ * @date 2026-02-11 22:52
+ * @description LeetCode92 最小路径和
+ */
+public class hot92 {
+    public int minPathSum(int[][] grid) {
+        int m = grid.length;
+        int n = grid[0].length;
+        int[][] dp = new int[m][n];
+        dp[0][0] = grid[0][0];
+        for(int i = 1; i < m; i++){
+            dp[i][0] = dp[i-1][0] + grid[i][0];
+        }
+        for(int j = 1; j < n; j++){
+            dp[0][j] = dp[0][j-1] + grid[0][j];
+        }
+        for(int i = 1; i < m; i++){
+            for(int j = 1; j < n; j++){
+                dp[i][j] = Math.min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+            }
+        }
+        return dp[m-1][n-1];
+    }
+}
+```
+
+别人优化的算法，一维数组操作，同时进行缓存，按行去处理，学习即可
+
+```
+public int minPathSum(int[][] grid) {
+        int n=grid.length;
+        int m=grid[0].length;
+        for(int i=1;i<m;i++){
+            grid[0][i]+=grid[0][i-1];
+        }
+        for(int j=1;j<n;j++){
+            fun(grid[j-1],grid[j]);
+        }
+        return grid[n-1][m-1];
+    }
+    private void fun(int[] pre,int[] row){
+        row[0]+=pre[0];
+        for(int i=1;i<row.length;i++){
+            row[i]=Math.min(row[i-1],pre[i])+row[i];
+        }
+    }
+```
+
+## 最长回文子串
+
+![](assets/1770822519339.png)
+
 
 
 
